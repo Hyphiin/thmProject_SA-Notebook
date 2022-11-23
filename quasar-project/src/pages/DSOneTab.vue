@@ -1,7 +1,6 @@
 <template>
   <div class="flex flex-center">
-    <h3>DS ONE</h3>
-    <RecipesOverview />
+    <RecipesOverview store-to-use="DS1" />
   </div>
 </template>
 

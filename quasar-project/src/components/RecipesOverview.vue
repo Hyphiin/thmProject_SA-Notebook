@@ -1,9 +1,13 @@
 <template>
-  <div v-for="i in 10" :key="i" class="q-mx-md q-my-sm">
+  <div
+    v-for="recipe in currentStore.recipes"
+    :key="recipe.id"
+    class="q-mx-md q-my-sm"
+  >
     <q-card class="my-card">
       <q-card-section class="bg-primary text-white">
-        <div class="text-h6">Our Changing Planet</div>
-        <div class="text-subtitle2">by John Doe</div>
+        <div class="text-h6">{{ recipe.title }}</div>
+        <div class="text-subtitle2">{{ recipe.servings }} Personen</div>
       </q-card-section>
 
       <q-card-section>
@@ -20,6 +24,44 @@
     </q-card>
   </div>
 </template>
+
+<script setup>
+/**
+ * imports
+ */
+import { onMounted, watch, ref } from "vue";
+
+import { useStoreRecipesDS1 } from "src/stores/storeRecipesDS1";
+import { useStoreRecipesDS2 } from "src/stores/storeRecipesDS2";
+import { useStoreRecipesDS3 } from "src/stores/storeRecipesDS3";
+
+/**
+ * props
+ */
+const props = defineProps({
+  storeToUse: {
+    type: String,
+    default: "DS1",
+  },
+});
+
+/**
+ * store
+ */
+let currentStore = useStoreRecipesDS1();
+
+watch(
+  () => currentStore,
+  () => {
+    if (props.storeToUse === "DS2") {
+      currentStore = currentStore = useStoreRecipesDS2();
+    } else if (props.storeToUse === "DS3") {
+      currentStore = currentStore = useStoreRecipesDS3();
+    }
+  },
+  { immediate: true }
+);
+</script>
 
 <style lang="scss">
 .my-card {
