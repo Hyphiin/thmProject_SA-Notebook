@@ -231,7 +231,7 @@ const onSubmit = () => {
       servings: servings.value,
       prepTime: prepTime.value,
       ingredients: allIngredients.value,
-      steps: allSteps.value,
+      prepSteps: allSteps.value,
     });
     Notify.create({
       color: "green-4",

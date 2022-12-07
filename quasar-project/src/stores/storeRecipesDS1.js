@@ -49,7 +49,10 @@ export const useStoreRecipesDS1 = defineStore("storeRecipesDS1", () => {
     let recipe = {
       id,
       title: newRecipeContent.title,
-      sevings: newRecipeContent.sevings,
+      sevings: newRecipeContent.servings,
+      prepTime: newRecipeContent.prepTime,
+      ingredients: newRecipeContent.ingredients,
+      prepSteps: newRecipeContent.prepSteps,
     };
     recipes.value.unshift(recipe);
   };
