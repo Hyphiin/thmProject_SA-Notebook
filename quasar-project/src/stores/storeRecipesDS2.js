@@ -1,42 +1,64 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
+import {
+  collection,
+  onSnapshot,
+  doc,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  query,
+  orderBy,
+} from "firebase/firestore";
+import { db } from "/src/js/firebase";
+
+const recipesCollectionRef = collection(db, "Dialogsystem2");
+const recipesCollectionQuery = query(
+  recipesCollectionRef,
+  orderBy("date", "desc")
+);
 
 export const useStoreRecipesDS2 = defineStore("storeRecipesDS2", () => {
-  const recipes = ref([
-    {
-      id: "id1",
-      title: "Calzone",
-      servings: 2,
-    },
-    {
-      id: "id2",
-      title: "Cabonara",
-      servings: 4,
-    },
-  ]);
+  const recipes = ref([]);
 
   /**
    * actions
    */
-  const addRecipe = (newRecipeContent) => {
+  const getRecipes = async () => {
+    onSnapshot(recipesCollectionQuery, (querySnapshot) => {
+      const tempRecipes = [];
+      querySnapshot.forEach((doc) => {
+        let recipe = {
+          id: doc.id,
+          date: doc.data().date,
+          title: doc.data().title,
+          sevings: doc.data().servings,
+          prepTime: doc.data().prepTime,
+          ingredients: doc.data().ingredients,
+          prepSteps: doc.data().prepSteps,
+        };
+        tempRecipes.push(recipe);
+      });
+      recipes.value = tempRecipes;
+    });
+  };
+
+  const addRecipe = async (newRecipeContent) => {
     let currentDate = new Date().getTime(),
-      id = currentDate.toString();
+      date = currentDate.toString();
 
-    let recipe = {
-      id,
+    await addDoc(recipesCollectionRef, {
+      date,
       title: newRecipeContent.title,
-      sevings: newRecipeContent.sevings,
-    };
-    recipes.value.unshift(recipe);
+      sevings: newRecipeContent.servings,
+      prepTime: newRecipeContent.prepTime,
+      ingredients: newRecipeContent.ingredients,
+      prepSteps: newRecipeContent.prepSteps,
+    });
   };
 
-  const deleteRecipe = (idToDelete) => {
-    recipes.value = recipes.value.filter((recipe) => recipe.id !== idToDelete);
-  };
-
-  const updateRecipeTitle = (id, newTitle) => {
-    let index = recipes.value.findIndex((recipe) => recipe.id === id);
-    recipes.value[index].title = newTitle;
+  const deleteRecipe = async (idToDelete) => {
+    await deleteDoc(doc(recipesCollectionRef, idToDelete));
   };
 
   /**
@@ -45,8 +67,8 @@ export const useStoreRecipesDS2 = defineStore("storeRecipesDS2", () => {
 
   return {
     recipes,
+    getRecipes,
     addRecipe,
     deleteRecipe,
-    updateRecipeTitle,
   };
 });

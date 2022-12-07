@@ -149,11 +149,21 @@
 import { ref } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipesDS1 } from "src/stores/storeRecipesDS1";
+import { useStoreRecipesDS2 } from "src/stores/storeRecipesDS2";
+import { useStoreRecipesDS3 } from "src/stores/storeRecipesDS3";
+import { useRouter } from "vue-router";
+
+/**
+ * router
+ */
+const router = useRouter();
 
 /**
  * store
  */
 const storeRecipesDS1 = useStoreRecipesDS1();
+const storeRecipesDS2 = useStoreRecipesDS2();
+const storeRecipesDS3 = useStoreRecipesDS3();
 
 /**
  * recipe data
@@ -233,6 +243,21 @@ const onSubmit = () => {
       ingredients: allIngredients.value,
       prepSteps: allSteps.value,
     });
+    storeRecipesDS2.addRecipe({
+      title: title.value,
+      servings: servings.value,
+      prepTime: prepTime.value,
+      ingredients: allIngredients.value,
+      prepSteps: allSteps.value,
+    });
+    storeRecipesDS3.addRecipe({
+      title: title.value,
+      servings: servings.value,
+      prepTime: prepTime.value,
+      ingredients: allIngredients.value,
+      prepSteps: allSteps.value,
+    });
+
     Notify.create({
       color: "green-4",
       textColor: "white",
@@ -240,6 +265,7 @@ const onSubmit = () => {
       position: "top",
       message: `Rezept '${title.value}' wurde gespeichert!`,
     });
+    router.back();
   }
 };
 
@@ -251,8 +277,3 @@ const onReset = () => {
   servings.value = null;
 };
 </script>
-
-<style lang="scss">
-.newStep {
-}
-</style>
