@@ -11,7 +11,6 @@
           (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
         ]"
       />
-
       <q-input
         filled
         type="number"
@@ -29,58 +28,106 @@
         lazy-rules
         hint="Wie lange dauert es dieses Rezept zu kochen?"
       />
-      <div class="newIngredient flex">
-        <q-input
-          filled
-          v-model="newIngredientName"
-          label="Zutat"
-          class="q-mr-sm"
-          :error="displayError"
-          error-message="Bitte ausfüllen"
-        />
-        <q-input
-          filled
-          v-model="newIngredientNumber"
-          type="number"
-          label="Anzahl"
-          class="q-ml-sm"
-          :error="displayError"
-          error-message="Bitte ausfüllen"
-        />
-        <q-select
-          filled
-          v-model="newIngredientNumberType"
-          :options="options"
-          label=""
-          class="q-ml-sm"
-        />
-      </div>
-      <div class="addIngredient flex justify-center">
-        <q-btn label="" icon="add" color="primary" @click="addIngredient" />
-      </div>
-      Zutaten:
-      <div
-        v-for="(ingredient, idx) in allIngredients"
-        :key="ingredient.name"
-        class="flex flex-col justify-between"
-      >
-        <div>
-          <span class="text-bold q-mr-md"
-            >{{ ingredient.number }} {{ ingredient.numberType }}</span
-          >
-          <span> {{ ingredient.name }}</span>
+      <div class="bg-grey-3 q-pa-md">
+        <div class="newIngredient flex">
+          <q-input
+            filled
+            v-model="newIngredientName"
+            label="Zutat"
+            class="q-mr-sm"
+            :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen"
+          />
+          <q-input
+            filled
+            v-model="newIngredientNumber"
+            type="number"
+            label="Anzahl"
+            class="q-ml-sm"
+            :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen"
+          />
+          <q-select
+            filled
+            v-model="newIngredientNumberType"
+            :options="options"
+            label=""
+            class="q-ml-sm"
+          />
+          <q-btn
+            class="q-ml-sm"
+            label=""
+            icon="add"
+            color="primary"
+            style="max-height: 56px"
+            @click="addIngredient"
+          />
         </div>
+        <div class="addIngredient flex justify-center"></div>
+        <p class="text-subtitle1 q-mt-lg">Zutaten:</p>
+        <div
+          v-for="(ingredient, idx) in allIngredients"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
+          <div>
+            <span class="text-bold q-mr-md"
+              >{{ ingredient.number }} {{ ingredient.numberType }}</span
+            >
+            <span> {{ ingredient.name }}</span>
+          </div>
 
-        <q-btn
-          flat
-          round
-          color="primary"
-          icon="delete"
-          size="sm"
-          @click="deleteIngredient(idx)"
-        />
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteIngredient(idx)"
+          />
+        </div>
       </div>
+      <div class="bg-grey-3 q-pa-md">
+        <div class="newStep flex justify-between">
+          <q-input
+            filled
+            type="textarea"
+            v-model="newStep"
+            :label="'Schritt ' + (allSteps.length + 1)"
+            class="q-mr-sm"
+            :error="displayErrorSteps"
+            error-message="Bitte ausfüllen"
+            style="min-width: 470px"
+          />
+          <q-btn
+            label=""
+            icon="add"
+            color="primary"
+            @click="addStep"
+            style="max-height: 56px"
+          />
+        </div>
+        <p class="text-subtitle1 q-mt-lg">Schritte:</p>
+        <div
+          v-for="(step, idx) in allSteps"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
+          <div>
+            <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
+            <span> {{ step }}</span>
+          </div>
 
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteStep(idx)"
+          />
+        </div>
+      </div>
       <div>
         <q-btn label="Speichern" type="submit" color="primary" />
         <q-btn
@@ -109,28 +156,22 @@ import { useStoreRecipesDS1 } from "src/stores/storeRecipesDS1";
 const storeRecipesDS1 = useStoreRecipesDS1();
 
 /**
- * data to save
+ * recipe data
  */
 const title = ref(null);
 const servings = ref(null);
 const prepTime = ref(null);
+/**
+ * ingredients data
+ */
 const newIngredientName = ref("");
 const newIngredientNumber = ref("");
 const newIngredientNumberType = ref("g");
 const allIngredients = ref([]);
 
-/**
- * helper vars
- */
-const displayError = ref(false);
-const options = ref(["g", "kg", "ml", "l", "Stk", "Pkg"]);
-
-/**
- * add ingredient Btn
- */
 const addIngredient = () => {
   if (newIngredientName.value !== "" && newIngredientNumber.value !== "") {
-    displayError.value = false;
+    displayErrorIngredients.value = false;
     allIngredients.value.push({
       name: newIngredientName.value,
       number: newIngredientNumber.value,
@@ -140,12 +181,37 @@ const addIngredient = () => {
     newIngredientNumber.value = "";
     newIngredientNumberType.value = "g";
   } else {
-    displayError.value = true;
+    displayErrorIngredients.value = true;
   }
 };
 const deleteIngredient = (idx) => {
   allIngredients.value.splice(idx, 1);
 };
+/**
+ * steps data
+ */
+const newStep = ref("");
+const allSteps = ref([]);
+
+const addStep = () => {
+  if (newStep.value !== "") {
+    displayErrorStep.value = false;
+    allSteps.value.push(newStep.value);
+    newStep.value = "";
+  } else {
+    displayErrorStep.value = true;
+  }
+};
+const deleteStep = (idx) => {
+  allSteps.value.splice(idx, 1);
+};
+
+/**
+ * helper vars
+ */
+const displayErrorIngredients = ref(false);
+const displayErrorStep = ref(false);
+const options = ref(["g", "kg", "ml", "l", "Stk", "Pkg"]);
 
 /**
  * save in store
@@ -165,6 +231,7 @@ const onSubmit = () => {
       servings: servings.value,
       prepTime: prepTime.value,
       ingredients: allIngredients.value,
+      steps: allSteps.value,
     });
     Notify.create({
       color: "green-4",
@@ -184,3 +251,8 @@ const onReset = () => {
   servings.value = null;
 };
 </script>
+
+<style lang="scss">
+.newStep {
+}
+</style>
