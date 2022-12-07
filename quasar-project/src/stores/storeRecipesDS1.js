@@ -7,6 +7,18 @@ export const useStoreRecipesDS1 = defineStore("storeRecipesDS1", () => {
       id: "id1",
       title: "Spaghetti",
       servings: 4,
+      prepTime: "40min",
+      ingredients: [
+        { Nudeln: "500g" },
+        { Olivenöl: "50ml" },
+        { Tomaten: "4 Stk." },
+      ],
+      prepSteps: [
+        "Lorem Ipsum ndjscbdao udhasuih adoi asd asdio aso",
+        "foiadshfoashoh asdasod hasohdoi ashdoi",
+        "fisofchasohf ahsfo",
+        "asofashd adoihasoid hasiod osahdo ashodi ashodh soidh oashd osadohaohaosd h",
+      ],
     },
     {
       id: "id2",
