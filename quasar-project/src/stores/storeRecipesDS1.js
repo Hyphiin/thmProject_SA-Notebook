@@ -7,11 +7,35 @@ export const useStoreRecipesDS1 = defineStore("storeRecipesDS1", () => {
       id: "id1",
       title: "Spaghetti",
       servings: 4,
+      prepTime: "40min",
+      ingredients: [
+        { name: "Nudeln", number: "500", numberType: "g" },
+        { name: "Olivenöl", number: "50", numberType: "ml" },
+        { name: "Tomaten", number: "4", numberType: "Stk" },
+      ],
+      prepSteps: [
+        "Lorem Ipsum ndjscbdao udhasuih adoi asd asdio aso",
+        "foiadshfoashoh asdasod hasohdoi ashdoi",
+        "fisofchasohf ahsfo",
+        "asofashd adoihasoid hasiod osahdo ashodi ashodh soidh oashd osadohaohaosd h",
+      ],
     },
     {
       id: "id2",
       title: "Lasagne",
       servings: 6,
+      prepTime: "40min",
+      ingredients: [
+        { name: "Nudeln", number: "500", numberType: "g" },
+        { name: "Olivenöl", number: "50", numberType: "ml" },
+        { name: "Tomaten", number: "4", numberType: "Stk" },
+      ],
+      prepSteps: [
+        "Lorem Ipsum ndjscbdao udhasuih adoi asd asdio aso",
+        "foiadshfoashoh asdasod hasohdoi ashdoi",
+        "fisofchasohf ahsfo",
+        "asofashd adoihasoid hasiod osahdo ashodi ashodh soidh oashd osadohaohaosd h",
+      ],
     },
   ]);
 
