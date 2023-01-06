@@ -1,7 +1,10 @@
 <template>
   <q-btn class="q-ma-md" to="/">Abbrechen</q-btn>
   <div class="content-div flex column q-pa-md content-center justify-between">
-    <div class="texts flex column content-center q-ma-md">
+    <div
+      v-if="recognitionEnded === false"
+      class="texts flex column content-center q-ma-md"
+    >
       <p class="to-do-text">Mit der Rezepteingabe starten</p>
       <q-btn
         :class="displayStartBtn === true ? 'showStartBtn' : 'hideStartBtn'"
@@ -9,21 +12,132 @@
         @click="startRecognition"
       />
     </div>
-    <div class="flex items-end q-mt-md">
-      <q-btn
-        label="Speichern"
-        type="submit"
-        color="primary"
-        @click="onSubmit"
+    <q-form
+      v-if="recognitionEnded === true"
+      @submit="onSubmit"
+      @reset="onReset"
+      class="q-gutter-md"
+    >
+      <p>
+        Das Rezept wurde erfolgreich erkannt, im unteren Formular kannst du
+        alles noch mal prüfen.
+      </p>
+      <q-input
+        filled
+        v-model="title"
+        label="Titel des Rezeptes"
+        lazy-rules
+        :rules="[
+          (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
+        ]"
       />
-      <q-btn
-        label="Zurücksetzen"
-        type="reset"
-        color="primary"
-        flat
-        class="q-ml-sm"
+      <q-input
+        filled
+        v-model="servings"
+        label="Für wie viele Personen"
+        lazy-rules
+        hint="Für wie viele Personen ist dieses Rezept?"
       />
-    </div>
+
+      <q-input
+        filled
+        v-model="prepTime"
+        label="Zubereitungszeit"
+        lazy-rules
+        hint="Wie lange dauert es dieses Rezept zu kochen?"
+      />
+      <div class="bg-grey-3 q-pa-md">
+        <div class="newIngredient flex">
+          <q-input
+            filled
+            v-model="newIngredient"
+            label="Zutat"
+            class="q-mr-sm"
+            :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen"
+          />
+          <q-btn
+            class="q-ml-sm"
+            label=""
+            icon="add"
+            color="primary"
+            style="max-height: 56px"
+            @click="addIngredient"
+          />
+        </div>
+        <div class="addIngredient flex justify-center"></div>
+        <p class="text-subtitle1 q-mt-lg">Zutaten:</p>
+        <div
+          v-for="(ingredient, idx) in allIngredients"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
+          <div>
+            <span class="text-bold q-mr-md">{{ ingredient }}</span>
+          </div>
+
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteIngredient(idx)"
+          />
+        </div>
+      </div>
+      <div class="bg-grey-3 q-pa-md">
+        <div class="newStep flex justify-between">
+          <q-input
+            filled
+            type="textarea"
+            v-model="newStep"
+            :label="'Schritt ' + (allSteps.length + 1)"
+            class="q-mr-sm"
+            :error="displayErrorSteps"
+            error-message="Bitte ausfüllen"
+            style="min-width: 470px"
+          />
+          <q-btn
+            label=""
+            icon="add"
+            color="primary"
+            @click="addStep"
+            style="max-height: 56px"
+          />
+        </div>
+        <p class="text-subtitle1 q-mt-lg">Schritte:</p>
+        <div
+          v-for="(step, idx) in allSteps"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
+          <div>
+            <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
+            <span> {{ step }}</span>
+          </div>
+
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteStep(idx)"
+          />
+        </div>
+      </div>
+      <div>
+        <q-btn label="Speichern" type="submit" color="primary" />
+        <q-btn
+          label="Zurücksetzen"
+          type="reset"
+          color="primary"
+          flat
+          class="q-ml-sm"
+        />
+      </div>
+    </q-form>
   </div>
 </template>
 
@@ -59,22 +173,14 @@ const prepTime = ref(null);
 /**
  * ingredients data
  */
-const newIngredientName = ref("");
-const newIngredientNumber = ref("");
-const newIngredientNumberType = ref("g");
+const newIngredient = ref("");
 const allIngredients = ref([]);
 
 const addIngredient = () => {
-  if (newIngredientName.value !== "" && newIngredientNumber.value !== "") {
+  if (newIngredient.value !== "") {
     displayErrorIngredients.value = false;
-    allIngredients.value.push({
-      name: newIngredientName.value,
-      number: newIngredientNumber.value,
-      numberType: newIngredientNumberType.value,
-    });
-    newIngredientName.value = "";
-    newIngredientNumber.value = "";
-    newIngredientNumberType.value = "g";
+    allIngredients.value.push(newIngredient);
+    newIngredient.value = "";
   } else {
     displayErrorIngredients.value = true;
   }
@@ -111,6 +217,7 @@ const displayStartBtn = ref(true);
 const recognitionStarted = ref(false);
 const startedIngredientList = ref(false);
 const startedSteps = ref(false);
+const recognitionEnded = ref(false);
 
 /**
  * save in store
@@ -208,7 +315,10 @@ recognition.addEventListener("result", (e) => {
   texts.appendChild(p);
 
   if (e.results[0].isFinal) {
-    if (!e.results[0].includes("ja") || !e.results[0].includes("ja")) {
+    if (
+      !speechToText.value.includes("ja") ||
+      !speechToText.value.includes("nein")
+    ) {
       p = document.createElement("p");
     }
   }
@@ -263,6 +373,7 @@ recognition.addEventListener("end", () => {
         "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
       startedIngredientList.value = false;
       startedSteps.value = false;
+      recognitionEnded.value = true;
     } else {
       allSteps.value.push(speechToText.value);
       speechToText.value = "";
