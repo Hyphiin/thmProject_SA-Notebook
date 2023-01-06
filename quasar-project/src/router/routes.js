@@ -1,6 +1,6 @@
 import MainLayout from "../layouts/MainLayout.vue";
 import MainPage from "../pages/MainPage.vue";
-import AddRecipePage from "../pages/AddRecipePage.vue";
+import AddRecipePage from "../pages/AddRecipePage-DSOne.vue";
 
 const routes = [
   {
