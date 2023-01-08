@@ -148,9 +148,9 @@
  */
 import { ref } from "vue";
 import { Notify } from "quasar";
-import { useStoreRecipesDS1 } from "src/stores/storeRecipesDS1";
-import { useStoreRecipesDS2 } from "src/stores/storeRecipesDS2";
-import { useStoreRecipesDS3 } from "src/stores/storeRecipesDS3";
+import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
+import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
+import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 import { useRouter } from "vue-router";
 
 /**
@@ -161,9 +161,9 @@ const router = useRouter();
 /**
  * store
  */
-const storeRecipesDS1 = useStoreRecipesDS1();
-const storeRecipesDS2 = useStoreRecipesDS2();
-const storeRecipesDS3 = useStoreRecipesDS3();
+const storeRecipes_STT1 = useStoreRecipes_STT1();
+const storeRecipes_STT2 = useStoreRecipes_STT2();
+const storeRecipes_STT3 = useStoreRecipes_STT3();
 
 /**
  * recipe data
@@ -236,21 +236,21 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipesDS1.addRecipe({
+    storeRecipes_STT1.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
       ingredients: allIngredients.value,
       prepSteps: allSteps.value,
     });
-    storeRecipesDS2.addRecipe({
+    storeRecipes_STT2.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
       ingredients: allIngredients.value,
       prepSteps: allSteps.value,
     });
-    storeRecipesDS3.addRecipe({
+    storeRecipes_STT3.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,

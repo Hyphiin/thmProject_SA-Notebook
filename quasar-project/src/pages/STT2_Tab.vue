@@ -16,10 +16,10 @@
  */
 import RecipesCard from "../components/RecipesCard.vue";
 
-import { useStoreRecipesDS2 } from "src/stores/storeRecipesDS2";
+import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
 
 /**
  * store
  */
-const storeRecipes = useStoreRecipesDS2();
+const storeRecipes = useStoreRecipes_STT2();
 </script>

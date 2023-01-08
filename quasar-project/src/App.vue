@@ -7,23 +7,23 @@
  * imports
  */
 import { onMounted } from "vue";
-import { useStoreRecipesDS1 } from "src/stores/storeRecipesDS1";
-import { useStoreRecipesDS2 } from "src/stores/storeRecipesDS2";
-import { useStoreRecipesDS3 } from "src/stores/storeRecipesDS3";
+import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
+import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
+import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 
 /**
  * store
  */
-const storeRecipesDS1 = useStoreRecipesDS1();
-const storeRecipesDS2 = useStoreRecipesDS2();
-const storeRecipesDS3 = useStoreRecipesDS3();
+const storeRecipes_STT1 = useStoreRecipes_STT1();
+const storeRecipes_STT2 = useStoreRecipes_STT2();
+const storeRecipes_STT3 = useStoreRecipes_STT3();
 
 /**
  * mounted
  */
 onMounted(() => {
-  storeRecipesDS1.getRecipes();
-  storeRecipesDS2.getRecipes();
-  storeRecipesDS3.getRecipes();
+  storeRecipes_STT1.getRecipes();
+  storeRecipes_STT2.getRecipes();
+  storeRecipes_STT3.getRecipes();
 });
 </script>

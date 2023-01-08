@@ -12,13 +12,13 @@ import {
 } from "firebase/firestore";
 import { db } from "/src/js/firebase";
 
-const recipesCollectionRef = collection(db, "Dialogsystem3");
+const recipesCollectionRef = collection(db, "Dialogsystem2");
 const recipesCollectionQuery = query(
   recipesCollectionRef,
   orderBy("date", "desc")
 );
 
-export const useStoreRecipesDS3 = defineStore("storeRecipesDS3", () => {
+export const useStoreRecipes_STT2 = defineStore("storeRecipes_STT2", () => {
   const recipes = ref([]);
 
   /**

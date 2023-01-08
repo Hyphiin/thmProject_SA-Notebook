@@ -1,6 +1,9 @@
 import MainLayout from "../layouts/MainLayout.vue";
 import MainPage from "../pages/MainPage.vue";
-import AddRecipePage from "../pages/AddRecipePage-DSOne.vue";
+import AddRecipePageSTT_All from "../pages/AddRecipePage_STTAll.vue";
+import AddRecipePage_STT1 from "../pages/AddRecipePage_STT1.vue";
+import AddRecipePage_STT2 from "../pages/AddRecipePage_STT2.vue";
+// import AddRecipePage_STT3 from "../pages/AddRecipePage_STT3.vue";
 
 const routes = [
   {
@@ -14,10 +17,25 @@ const routes = [
         component: MainPage,
       },
       {
-        path: "/add-recipe",
-        name: "addRecipe",
-        component: AddRecipePage,
+        path: "/add-recipe-STT_All",
+        name: "addRecipeSTT_All",
+        component: AddRecipePageSTT_All,
       },
+      {
+        path: "/add-recipe-STT1",
+        name: "addRecipe_STT1",
+        component: AddRecipePage_STT1,
+      },
+      {
+        path: "/add-recipe-STT2",
+        name: "addRecipe_STT2",
+        component: AddRecipePage_STT2,
+      },
+      // {
+      //   path: "/add-recipe-STT3",
+      //   name: "addRecipe_STT3",
+      //   component: AddRecipePage_STT3,
+      // },
     ],
   },
 

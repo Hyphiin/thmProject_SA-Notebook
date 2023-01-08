@@ -16,10 +16,10 @@
  */
 import RecipesCard from "../components/RecipesCard.vue";
 
-import { useStoreRecipesDS3 } from "src/stores/storeRecipesDS3";
+import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 
 /**
  * store
  */
-const storeRecipes = useStoreRecipesDS3();
+const storeRecipes = useStoreRecipes_STT3();
 </script>
