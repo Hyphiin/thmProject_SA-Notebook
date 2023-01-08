@@ -278,69 +278,128 @@ const onReset = () => {
  * SpeechRecognition
  */
 
-// Using the /build/artyom.js file
-
 const artyom = new Artyom();
+
+artyom.initialize({
+  lang: "de-DE",
+  debug: true, //Show what recognizes in the Console
+  continuous: true,
+});
 
 let p = document.createElement("p");
 
 let texts = document.querySelector(".texts");
 let toDoText = document.querySelector(".to-do-text");
 
+const speechToText = ref("");
+
+let recognition;
+
 onMounted(() => {
   texts = document.querySelector(".texts");
   toDoText = document.querySelector(".to-do-text");
-  artyom.say("Hello");
-  artyom
-    .initialize({
-      lang: "de-DE", // GreatBritain english
-      continuous: true, // Listen forever
-      soundex: true, // Use the soundex algorithm to increase accuracy
-      debug: true, // Show messages in the console
-      executionKeyword: "and do it now",
-      listen: true, // Start to listen commands !
 
-      // If providen, you can only trigger a command if you say its name
-      // e.g to trigger Good Morning, you need to say "Jarvis Good Morning"
-      name: "Jarvis",
-    })
-    .then(() => {
-      console.log("Artyom has been succesfully initialized");
-    })
-    .catch((err) => {
-      console.error("Artyom couldn't be initialized: ", err);
-    });
+  recognition = artyom.newDictation(settings);
 });
 
-const startRecognition = () => {
-  artyom
-    .initialize({
-      lang: "de-DE", // GreatBritain english
-      continuous: true, // Listen forever
-      soundex: true, // Use the soundex algorithm to increase accuracy
-      debug: true, // Show messages in the console
-      executionKeyword: "and do it now",
-      listen: true, // Start to listen commands !
+var settings = {
+  continuous: true, // Don't stop never because i have https connection
+  onResult: function (text) {
+    if (text !== " " || text !== "") {
+      console.log(text);
+      p.innerText = text;
+      speechToText.value = text;
 
-      // If providen, you can only trigger a command if you say its name
-      // e.g to trigger Good Morning, you need to say "Jarvis Good Morning"
-      name: "Jarvis",
-    })
-    .then(() => {
-      console.log("Artyom has been succesfully initialized");
-    })
-    .catch((err) => {
-      console.error("Artyom couldn't be initialized: ", err);
-    });
-  // recognition.start();
-  // displayStartBtn.value = false;
-  // recognitionStarted.value = true;
-  // startedIngredientList.value = false;
-  // startedSteps.value = false;
-  // toDoText.innerText = "Wie ist der Titel des Rezeptes?";
+      texts.appendChild(p);
+
+      if (
+        !speechToText.value.includes("ja") ||
+        !speechToText.value.includes("nein")
+      ) {
+        p = document.createElement("p");
+      }
+
+      recognition.stop();
+    }
+  },
+  onStart: function () {
+    console.log("ONSTART");
+  },
+  onEnd: function () {
+    console.log("ONEND");
+    console.log("startedIngredientList: ", startedIngredientList.value);
+    console.log("startedSteps: ", startedSteps.value);
+    console.log("title: ", title.value);
+    console.log("servings: ", servings.value);
+    console.log("prepTime: ", prepTime.value);
+    if (startedIngredientList.value === false && startedSteps.value === false) {
+      if (recognitionStarted.value === true && title.value === null) {
+        title.value = speechToText.value;
+        speechToText.value = "";
+        toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
+        recognition.start();
+      } else if (title.value !== null && servings.value === null) {
+        servings.value = speechToText.value;
+        speechToText.value = "";
+        toDoText.innerText = "Wie lange dauert die Zubereitung?";
+        recognition.start();
+      } else if (servings.value !== null && prepTime.value === null) {
+        prepTime.value = speechToText.value;
+        speechToText.value = "";
+        toDoText.innerText = "Was ist die erste Zutat?";
+        startedIngredientList.value = true;
+        recognition.start();
+      }
+    } else if (startedIngredientList.value === true) {
+      console.log(startedIngredientList.value);
+      if (speechToText.value.includes("ja")) {
+        speechToText.value = "";
+        toDoText.innerText = "Was ist die nächste Zutat?";
+        recognition.start();
+      } else if (speechToText.value.includes("nein")) {
+        speechToText.value = "";
+        toDoText.innerText = "Was ist der erste Arbeitsschritt?";
+        startedIngredientList.value = false;
+        startedSteps.value = true;
+        recognition.start();
+      } else {
+        allIngredients.value.push(speechToText.value);
+        speechToText.value = "";
+        toDoText.innerText =
+          "Gibt es noch eine Zutat? Antworte bitte mit Ja oder Nein.";
+        recognition.start();
+      }
+    } else if (startedSteps.value === true) {
+      if (speechToText.value.includes("ja")) {
+        speechToText.value = "";
+        toDoText.innerText = "Was ist der nächste Arbeitsschritt?";
+        recognition.start();
+      } else if (speechToText.value.includes("nein")) {
+        speechToText.value = "";
+        toDoText.innerText =
+          "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
+        startedIngredientList.value = false;
+        startedSteps.value = false;
+        recognitionEnded.value = true;
+      } else {
+        allSteps.value.push(speechToText.value);
+        speechToText.value = "";
+        toDoText.innerText =
+          "Gibt es noch einen Arbeitsschritt? Antworte bitte mit Ja oder Nein.";
+        recognition.start();
+      }
+    }
+  },
 };
 
-// const speechToText = ref("");
+const startRecognition = () => {
+  recognition.start();
+  displayStartBtn.value = false;
+  recognitionStarted.value = true;
+  startedIngredientList.value = false;
+  startedSteps.value = false;
+  toDoText.innerText = "Wie ist der Titel des Rezeptes?";
+};
 
 //  recognition.addEventListener("result", (e) => {
 //   const text = Array.from(e.results)
