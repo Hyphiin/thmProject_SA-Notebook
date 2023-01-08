@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "artyom.js": "^1.0.6",
     "core-js": "^3.6.5",
     "firebase": "^9.14.0",
     "pinia": "^2.0.26",
