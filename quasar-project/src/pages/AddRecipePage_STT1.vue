@@ -136,6 +136,7 @@ const recognitionStarted = ref(false);
 const startedIngredientList = ref(false);
 const startedSteps = ref(false);
 const recognitionEnded = ref(false);
+const siteOpen = ref(true);
 
 /**
  * save in store
@@ -238,43 +239,43 @@ recognition.addEventListener("end", () => {
       title.value = speechToText.value;
       speechToText.value = "";
       toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
-      recognition.start();
+      startRec();
     } else if (title.value !== null && servings.value === null) {
       servings.value = speechToText.value;
       speechToText.value = "";
       toDoText.innerText = "Wie lange dauert die Zubereitung?";
-      recognition.start();
+      startRec();
     } else if (servings.value !== null && prepTime.value === null) {
       prepTime.value = speechToText.value;
       speechToText.value = "";
       toDoText.innerText = "Was ist die erste Zutat?";
       startedIngredientList.value = true;
-      recognition.start();
+      startRec();
     }
   } else if (startedIngredientList.value === true) {
     console.log(startedIngredientList.value);
     if (speechToText.value.includes("ja")) {
       speechToText.value = "";
       toDoText.innerText = "Was ist die nächste Zutat?";
-      recognition.start();
+      startRec();
     } else if (speechToText.value.includes("nein")) {
       speechToText.value = "";
       toDoText.innerText = "Was ist der erste Arbeitsschritt?";
       startedIngredientList.value = false;
       startedSteps.value = true;
-      recognition.start();
+      startRec();
     } else {
       allIngredients.value.push(speechToText.value);
       speechToText.value = "";
       toDoText.innerText =
         "Gibt es noch eine Zutat? Antworte bitte mit Ja oder Nein.";
-      recognition.start();
+      startRec();
     }
   } else if (startedSteps.value === true) {
     if (speechToText.value.includes("ja")) {
       speechToText.value = "";
       toDoText.innerText = "Was ist der nächste Arbeitsschritt?";
-      recognition.start();
+      startRec();
     } else if (speechToText.value.includes("nein")) {
       speechToText.value = "";
       toDoText.innerText =
@@ -287,7 +288,7 @@ recognition.addEventListener("end", () => {
       speechToText.value = "";
       toDoText.innerText =
         "Gibt es noch einen Arbeitsschritt? Antworte bitte mit Ja oder Nein.";
-      recognition.start();
+      startRec();
     }
   }
 }
@@ -296,11 +297,19 @@ recognition.addEventListener("end", () => {
 const stopMic = () => {
   console.log("stop mic");
   recognition.removeEventListener("end", () => { });
-  setTimeout(() => recognition.stop(), 100);
   startedIngredientList.value = false;
   startedSteps.value = false;
   recognitionEnded.value = true;
-  
+  siteOpen.value = false;
+  startRec();
+}
+
+const startRec = () =>{
+  if (recognitionStarted.value && siteOpen.value){
+    recognition.start();
+  }else{
+    recognition.stop();
+  }
 }
 
 onUnmounted(() => {
@@ -308,8 +317,9 @@ onUnmounted(() => {
   recognitionEnded.value = true;
   recognition.removeEventListener("result", () => { });
   recognition.removeEventListener("end", () => { });
-  setTimeout(() => recognition.stop(), 100);
   recognition.stop();
+  siteOpen.value = false;
+  startRec();
 });
 </script>
 
