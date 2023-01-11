@@ -301,6 +301,7 @@ const startRecognition = () => {
   startedIngredientList.value = false;
   startedSteps.value = false;
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
+  console.log("hallo")
 };
 
 const speechToText = ref("");
