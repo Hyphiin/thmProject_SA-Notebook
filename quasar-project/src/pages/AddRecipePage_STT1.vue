@@ -1,141 +1,59 @@
 <template>
-  <q-btn class="q-ma-md" to="/">Abbrechen</q-btn>
+  <q-btn class="q-ma-md" @click="stopMic" to="/">Abbrechen</q-btn>
   <div class="content-div flex column q-pa-md content-center justify-between">
-    <div
-      v-if="recognitionEnded === false"
-      class="texts flex column content-center q-ma-md"
-    >
+    <div v-if="recognitionEnded === false" class="texts flex column content-center q-ma-md">
       <p class="to-do-text">Mit der Rezepteingabe starten</p>
-      <q-btn
-        :class="displayStartBtn === true ? 'showStartBtn' : 'hideStartBtn'"
-        label="Starten"
-        @click="startRecognition"
-      />
+      <q-btn :class="displayStartBtn === true ? 'showStartBtn' : 'hideStartBtn'" label="Starten"
+        @click="startRecognition" />
     </div>
-    <q-form
-      v-if="recognitionEnded === true"
-      @submit="onSubmit"
-      @reset="onReset"
-      class="q-gutter-md"
-    >
+    <q-form v-if="recognitionEnded === true" @submit="onSubmit" @reset="onReset" class="q-gutter-md">
       <p>
         Das Rezept wurde erfolgreich erkannt, im unteren Formular kannst du
         alles noch mal prüfen.
       </p>
-      <q-input
-        filled
-        v-model="title"
-        label="Titel des Rezeptes"
-        lazy-rules
-        :rules="[
-          (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
-        ]"
-      />
-      <q-input
-        filled
-        v-model="servings"
-        label="Für wie viele Personen"
-        lazy-rules
-        hint="Für wie viele Personen ist dieses Rezept?"
-      />
+      <q-input filled v-model="title" label="Titel des Rezeptes" lazy-rules :rules="[
+        (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
+      ]" />
+      <q-input filled v-model="servings" label="Für wie viele Personen" lazy-rules
+        hint="Für wie viele Personen ist dieses Rezept?" />
 
-      <q-input
-        filled
-        v-model="prepTime"
-        label="Zubereitungszeit"
-        lazy-rules
-        hint="Wie lange dauert es dieses Rezept zu kochen?"
-      />
+      <q-input filled v-model="prepTime" label="Zubereitungszeit" lazy-rules
+        hint="Wie lange dauert es dieses Rezept zu kochen?" />
       <div class="bg-grey-3 q-pa-md">
         <div class="newIngredient flex">
-          <q-input
-            filled
-            v-model="newIngredient"
-            label="Zutat"
-            class="q-mr-sm"
-            :error="displayErrorIngredients"
-            error-message="Bitte ausfüllen"
-          />
-          <q-btn
-            class="q-ml-sm"
-            label=""
-            icon="add"
-            color="primary"
-            style="max-height: 56px"
-            @click="addIngredient"
-          />
+          <q-input filled v-model="newIngredient" label="Zutat" class="q-mr-sm" :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen" />
+          <q-btn class="q-ml-sm" label="" icon="add" color="primary" style="max-height: 56px" @click="addIngredient" />
         </div>
         <div class="addIngredient flex justify-center"></div>
         <p class="text-subtitle1 q-mt-lg">Zutaten:</p>
-        <div
-          v-for="(ingredient, idx) in allIngredients"
-          :key="idx"
-          class="flex flex-col justify-between"
-        >
+        <div v-for="(ingredient, idx) in allIngredients" :key="idx" class="flex flex-col justify-between">
           <div>
             <span class="text-bold q-mr-md">{{ ingredient }}</span>
           </div>
 
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteIngredient(idx)"
-          />
+          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteIngredient(idx)" />
         </div>
       </div>
       <div class="bg-grey-3 q-pa-md">
         <div class="newStep flex justify-between">
-          <q-input
-            filled
-            type="textarea"
-            v-model="newStep"
-            :label="'Schritt ' + (allSteps.length + 1)"
-            class="q-mr-sm"
-            :error="displayErrorSteps"
-            error-message="Bitte ausfüllen"
-            style="min-width: 470px"
-          />
-          <q-btn
-            label=""
-            icon="add"
-            color="primary"
-            @click="addStep"
-            style="max-height: 56px"
-          />
+          <q-input filled type="textarea" v-model="newStep" :label="'Schritt ' + (allSteps.length + 1)" class="q-mr-sm"
+            :error="displayErrorSteps" error-message="Bitte ausfüllen" style="min-width: 470px" />
+          <q-btn label="" icon="add" color="primary" @click="addStep" style="max-height: 56px" />
         </div>
         <p class="text-subtitle1 q-mt-lg">Schritte:</p>
-        <div
-          v-for="(step, idx) in allSteps"
-          :key="idx"
-          class="flex flex-col justify-between"
-        >
+        <div v-for="(step, idx) in allSteps" :key="idx" class="flex flex-col justify-between">
           <div>
             <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
             <span> {{ step }}</span>
           </div>
 
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteStep(idx)"
-          />
+          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteStep(idx)" />
         </div>
       </div>
       <div>
         <q-btn label="Speichern" type="submit" color="primary" />
-        <q-btn
-          label="Zurücksetzen"
-          type="reset"
-          color="primary"
-          flat
-          class="q-ml-sm"
-        />
+        <q-btn label="Zurücksetzen" type="reset" color="primary" flat class="q-ml-sm" />
       </div>
     </q-form>
   </div>
@@ -239,20 +157,6 @@ const onSubmit = () => {
       ingredients: allIngredients.value,
       prepSteps: allSteps.value,
     });
-    storeRecipes_STT2.addRecipe({
-      title: title.value,
-      servings: servings.value,
-      prepTime: prepTime.value,
-      ingredients: allIngredients.value,
-      prepSteps: allSteps.value,
-    });
-    storeRecipes_STT3.addRecipe({
-      title: title.value,
-      servings: servings.value,
-      prepTime: prepTime.value,
-      ingredients: allIngredients.value,
-      prepSteps: allSteps.value,
-    });
 
     Notify.create({
       color: "green-4",
@@ -280,9 +184,9 @@ const onReset = () => {
 window.SpeechRecognition =
   window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const recognition = new window.SpeechRecognition();
-
-recognition.interimResults = true;
+//const recognition = new window.SpeechRecognition();
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new Recognition();
 
 let p = document.createElement("p");
 
@@ -292,6 +196,8 @@ let toDoText = document.querySelector(".to-do-text");
 onMounted(() => {
   texts = document.querySelector(".texts");
   toDoText = document.querySelector(".to-do-text");
+  recognition.continous = true;
+  recognition.interimResults = true;
 });
 
 const startRecognition = () => {
@@ -318,7 +224,7 @@ recognition.addEventListener("result", (e) => {
   if (e.results[0].isFinal) {
     console.log("STT 1:", e.results);
     if (
-      !speechToText.value.includes("ja") ||
+      !speechToText.value.includes("ja") &&
       !speechToText.value.includes("nein")
     ) {
       p = document.createElement("p");
@@ -384,14 +290,26 @@ recognition.addEventListener("end", () => {
       recognition.start();
     }
   }
-});
+}
+);
+
+const stopMic = () => {
+  console.log("stop mic");
+  recognition.removeEventListener("end", () => { });
+  setTimeout(() => recognition.stop(), 100);
+  startedIngredientList.value = false;
+  startedSteps.value = false;
+  recognitionEnded.value = true;
+  
+}
 
 onUnmounted(() => {
   console.log("Unmounted");
-  recognition.abort();
+  recognitionEnded.value = true;
+  recognition.removeEventListener("result", () => { });
+  recognition.removeEventListener("end", () => { });
+  setTimeout(() => recognition.stop(), 100);
   recognition.stop();
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
 });
 </script>
 

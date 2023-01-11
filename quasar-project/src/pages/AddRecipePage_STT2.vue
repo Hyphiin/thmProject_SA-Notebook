@@ -233,21 +233,7 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipes_STT1.addRecipe({
-      title: title.value,
-      servings: servings.value,
-      prepTime: prepTime.value,
-      ingredients: allIngredients.value,
-      prepSteps: allSteps.value,
-    });
     storeRecipes_STT2.addRecipe({
-      title: title.value,
-      servings: servings.value,
-      prepTime: prepTime.value,
-      ingredients: allIngredients.value,
-      prepSteps: allSteps.value,
-    });
-    storeRecipes_STT3.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
@@ -303,7 +289,7 @@ onMounted(() => {
 });
 
 var settings = {
-  continuous: true, // Don't stop never because i have https connection
+  continuous: false, // Don't stop never because i have https connection
   onResult: function (text) {
     if (text !== " " || text !== "") {
       console.log(text);
@@ -313,7 +299,7 @@ var settings = {
       texts.appendChild(p);
 
       if (
-        !speechToText.value.includes("ja") ||
+        !speechToText.value.includes("ja") &&
         !speechToText.value.includes("nein")
       ) {
         p = document.createElement("p");
