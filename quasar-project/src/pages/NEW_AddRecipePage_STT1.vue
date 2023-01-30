@@ -7,21 +7,15 @@
     >
       <p class="to-do-text">Mit der Rezepteingabe starten</p>
       <q-btn
-        :class="displayStartBtn === true ? 'showStartBtn' : 'hideStartBtn'"
+        :class="startDic === false ? 'showStartBtn' : 'hideStartBtn'"
         label="Starten"
-        @click="startRecognition"
+        @click="startRecipeDictation"
       />
     </div>
-    <div v-if="displayStartBtn === false">
+    <div v-if="startDic === true">
       <q-btn
-        v-if="recognitionStarted === false"
-        label="Starten"
-        @click="recognition.start()"
-      />
-      <q-btn
-        v-if="recognitionStarted === true"
-        label="Beenden"
-        @click="endMic"
+        :label="recording === false ? 'Starten' : 'Stoppen'"
+        @click="toggleRecording"
       />
     </div>
     <q-form
@@ -173,8 +167,6 @@ const router = useRouter();
  * store
  */
 const storeRecipes_STT1 = useStoreRecipes_STT1();
-const storeRecipes_STT2 = useStoreRecipes_STT2();
-const storeRecipes_STT3 = useStoreRecipes_STT3();
 
 /**
  * recipe data
@@ -225,11 +217,7 @@ const deleteStep = (idx) => {
 const displayErrorIngredients = ref(false);
 const displayErrorStep = ref(false);
 const options = ref(["g", "kg", "ml", "l", "Stk", "Pkg"]);
-const displayStartBtn = ref(true);
 const recognitionStarted = ref(false);
-const startedIngredientList = ref(false);
-const startedSteps = ref(false);
-const recognitionEnded = ref(false);
 const siteOpen = ref(true);
 
 /**
@@ -276,146 +264,228 @@ const onReset = () => {
  * SpeechRecognition
  */
 
-window.SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-//const recognition = new window.SpeechRecognition();
-const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new Recognition();
+onMounted(() => {
+  texts = document.querySelector(".texts");
+  toDoText = document.querySelector(".to-do-text");
+});
 
 let p = document.createElement("p");
 
 let texts = document.querySelector(".texts");
 let toDoText = document.querySelector(".to-do-text");
 
-onMounted(() => {
-  texts = document.querySelector(".texts");
-  toDoText = document.querySelector(".to-do-text");
-  recognition.continous = true;
-  recognition.interimResults = true;
-});
+window.SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
 
-const startRecognition = () => {
-  console.log("startRecognition");
-  displayStartBtn.value = false;
-  startedIngredientList.value = false;
-  startedSteps.value = false;
+let recognition = new window.SpeechRecognition();
+const startDic = ref(false);
+const recording = ref(false);
+const results = ref(null);
+const endResult = ref(null);
+
+const startedIngredientList = ref(false);
+const startedSteps = ref(false);
+const recognitionEnded = ref(false);
+
+recognition.continuous = true;
+
+const startRecipeDictation = () => {
+  startDic.value = true;
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
-};
-const endRecognition = () => {
-  console.log("endRecognition");
-  recognition.removeEventListener("end", () => {});
-  startedIngredientList.value = false;
-  startedSteps.value = false;
-  recognitionEnded.value = true;
-  siteOpen.value = false;
+  recognitionEnded.value = false;
 };
 
-recognition.onstart = () => {
-  console.log("onStart");
-  recognitionStarted.value = true;
-};
+function toggleRecording() {
+  if (recording.value) {
+    recognition.onend = null;
+    recognition.stop();
+    recording.value = false;
+    results.value = null;
+    p.innerHTML = "";
 
-const endMic = () => {
-  recognition.abort();
-  console.log("onEnd");
-  recognitionStarted.value = false;
-  onEnd();
-};
+    console.log("stop", endResult.value);
+    if (startedIngredientList.value === false && startedSteps.value === false) {
+      if (title.value === null) {
+        title.value = endResult.value;
+        endResult.value = null;
+        toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
+      } else if (title.value !== null && servings.value === null) {
+        servings.value = endResult.value;
+        endResult.value = null;
+        toDoText.innerText = "Wie lange dauert die Zubereitung?";
+      } else if (servings.value !== null && prepTime.value === null) {
+        prepTime.value = endResult.value;
+        endResult.value = null;
+        toDoText.innerText =
+          "Was sind die Zutaten? Sage diese im folgenden Format: '500 Gramm Tomaten' und trenne Sie jeweils mit einem lauten 'und'.";
+        startedIngredientList.value = true;
+      }
+    } else if (startedIngredientList.value === true) {
+      const tempIngridents = endResult.value.split(" und ");
+      tempIngridents.forEach((ingredient) => {
+        allIngredients.value.push(ingredient);
+      });
 
-const speechToText = ref("");
-recognition.onresult = (e) => {
-  console.log("results");
-  const text = Array.from(e.results)
-    .map((result) => result[0])
-    .map((result) => result.transcript)
-    .join("");
-  p.innerText = text;
-  speechToText.value = text;
-
-  texts.appendChild(p);
-
-  if (e.results[0].isFinal) {
-    console.log("STT 1:", e.results);
-    if (
-      !speechToText.value.includes("ja") &&
-      !speechToText.value.includes("nein")
-    ) {
-      p = document.createElement("p");
-    }
-  }
-};
-
-const onEnd = () => {
-  console.log("stop");
-  if (startedIngredientList.value === false && startedSteps.value === false) {
-    if (title.value === null) {
-      title.value = speechToText.value;
-      speechToText.value = "";
-      toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
-    } else if (title.value !== null && servings.value === null) {
-      servings.value = speechToText.value;
-      speechToText.value = "";
-      toDoText.innerText = "Wie lange dauert die Zubereitung?";
-    } else if (servings.value !== null && prepTime.value === null) {
-      prepTime.value = speechToText.value;
-      speechToText.value = "";
-      toDoText.innerText =
-        "Was sind die Zutaten? Sage diese im folgenden Format: 'Tomaten 5 Stück' und trenne Sie jeweils mit einem lauten 'und'.";
-      startedIngredientList.value = true;
-    }
-  } else if (startedIngredientList.value === true) {
-    console.log(startedIngredientList.value);
-    if (speechToText.value.includes("ja")) {
-      speechToText.value = "";
-      toDoText.innerText =
-        "Was sind die weiteren Zutaten?  Sage diese im folgenden Format: 'Tomaten 5 Stück' und trenne Sie jeweils mit einem lauten 'und'.";
-    } else if (speechToText.value.includes("nein")) {
-      speechToText.value = "";
-      toDoText.innerText = "Was ist der erste Arbeitsschritt?";
       startedIngredientList.value = false;
       startedSteps.value = true;
-    } else {
-      allIngredients.value.push(speechToText.value);
-      speechToText.value = "";
       toDoText.innerText =
-        "Gibt es noch mehr Zutaten? Antworte bitte mit 'ja' oder 'nein'.";
-    }
-  } else if (startedSteps.value === true) {
-    if (speechToText.value.includes("fertig")) {
-      speechToText.value = "";
+        "Was sind die Arbeitsschritte? Sage bitte vor jedem Schritt: 'Nächster Schritt'.";
+    } else if (startedSteps.value === true) {
+      const tempSteps = endResult.value.split(" nächster Schritt ");
+      tempSteps.forEach((step) => {
+        allSteps.value.push(step);
+      });
+
       toDoText.innerText =
         "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
-      startedIngredientList.value = false;
+
       startedSteps.value = false;
+      startDic.value = false;
       recognitionEnded.value = true;
-    } else {
-      allSteps.value.push(speechToText.value);
-      speechToText.value = "";
-      toDoText.innerText =
-        "Was ist der nächste Arbeitsschritt? Wenn es keine mehr gibt, sag einfach 'fertig'.";
     }
-  }
-};
-
-const startRec = () => {
-  console.log("startRec??");
-  if (recognitionStarted.value && siteOpen.value) {
-    recognition.start();
   } else {
-    recognition.stop();
+    recognition.onend = onEnd;
+    recognition.start();
+    recording.value = true;
   }
-};
+}
 
-onUnmounted(() => {
-  console.log("Unmounted");
-  recognitionEnded.value = true;
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
-  recognition.stop();
-  siteOpen.value = false;
-  endRecognition();
-});
+function onEnd() {
+  console.log("Speech recognition has stopped. Starting again ...");
+  recognition.start();
+}
+
+function onSpeak(e) {
+  results.value = e.results;
+  console.log(e.results[e.results.length - 1][0].transcript);
+  p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+  endResult.value = p.innerHTML;
+
+  texts.appendChild(p);
+}
+
+recognition.addEventListener("result", onSpeak);
+
+//const recognition = new window.SpeechRecognition();
+// const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+// const recognition = new Recognition();
+
+// let p = document.createElement("p");
+
+// let texts = document.querySelector(".texts");
+// let toDoText = document.querySelector(".to-do-text");
+
+// const startRecognition = () => {
+//   console.log("startRecognition");
+//   displayStartBtn.value = false;
+//   startedIngredientList.value = false;
+//   startedSteps.value = false;
+//   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
+// };
+// const endRecognition = () => {
+//   console.log("endRecognition");
+//   recognition.removeEventListener("end", () => {});
+//   startedIngredientList.value = false;
+//   startedSteps.value = false;
+//   recognitionEnded.value = true;
+//   siteOpen.value = false;
+// };
+
+// recognition.onstart = () => {
+//   console.log("onStart");
+//   recognitionStarted.value = true;
+// };
+
+// const endMic = () => {
+//   recognition.abort();
+//   console.log("onEnd");
+//   recognitionStarted.value = false;
+//   onEnd();
+// };
+
+// const speechToText = ref("");
+// recognition.onresult = (e) => {
+//   console.log("results");
+//   const text = Array.from(e.results)
+//     .map((result) => result[0])
+//     .map((result) => result.transcript)
+//     .join("");
+//   p.innerText = text;
+//   speechToText.value = text;
+
+//   texts.appendChild(p);
+// };
+
+// const onEnd = () => {
+//   console.log("stop");
+//   if (startedIngredientList.value === false && startedSteps.value === false) {
+//     if (title.value === null) {
+//       title.value = speechToText.value;
+//       speechToText.value = "";
+//       toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
+//     } else if (title.value !== null && servings.value === null) {
+//       servings.value = speechToText.value;
+//       speechToText.value = "";
+//       toDoText.innerText = "Wie lange dauert die Zubereitung?";
+//     } else if (servings.value !== null && prepTime.value === null) {
+//       prepTime.value = speechToText.value;
+//       speechToText.value = "";
+//       toDoText.innerText =
+//         "Was sind die Zutaten? Sage diese im folgenden Format: 'Tomaten 5 Stück' und trenne Sie jeweils mit einem lauten 'und'.";
+//       startedIngredientList.value = true;
+//     }
+//   } else if (startedIngredientList.value === true) {
+//     console.log(startedIngredientList.value);
+//     if (speechToText.value.includes("ja")) {
+//       speechToText.value = "";
+//       toDoText.innerText =
+//         "Was sind die weiteren Zutaten?  Sage diese im folgenden Format: 'Tomaten 5 Stück' und trenne Sie jeweils mit einem lauten 'und'.";
+//     } else if (speechToText.value.includes("nein")) {
+//       speechToText.value = "";
+//       toDoText.innerText = "Was ist der erste Arbeitsschritt?";
+//       startedIngredientList.value = false;
+//       startedSteps.value = true;
+//     } else {
+//       allIngredients.value.push(speechToText.value);
+//       speechToText.value = "";
+//       toDoText.innerText =
+//         "Gibt es noch mehr Zutaten? Antworte bitte mit 'ja' oder 'nein'.";
+//     }
+//   } else if (startedSteps.value === true) {
+//     if (speechToText.value.includes("fertig")) {
+//       speechToText.value = "";
+//       toDoText.innerText =
+//         "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
+//       startedIngredientList.value = false;
+//       startedSteps.value = false;
+//       recognitionEnded.value = true;
+//     } else {
+//       allSteps.value.push(speechToText.value);
+//       speechToText.value = "";
+//       toDoText.innerText =
+//         "Was ist der nächste Arbeitsschritt? Wenn es keine mehr gibt, sag einfach 'fertig'.";
+//     }
+//   }
+// };
+
+// const startRec = () => {
+//   console.log("startRec??");
+//   if (recognitionStarted.value && siteOpen.value) {
+//     recognition.start();
+//   } else {
+//     recognition.stop();
+//   }
+// };
+
+// onUnmounted(() => {
+//   console.log("Unmounted");
+//   recognitionEnded.value = true;
+//   recognition.removeEventListener("result", () => {});
+//   recognition.removeEventListener("end", () => {});
+//   recognition.stop();
+//   siteOpen.value = false;
+//   endRecognition();
+// });
 </script>
 
 <style lang="scss">
