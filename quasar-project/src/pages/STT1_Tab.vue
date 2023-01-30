@@ -5,7 +5,12 @@
       :key="recipe.id"
       class="q-mx-md q-my-sm"
     >
-      <RecipesCard :title="recipe.title" :servings="recipe.servings" />
+      <RecipesCard
+        flat
+        class="bg-secondary"
+        :title="recipe.title"
+        :servings="recipe.servings"
+      />
     </div>
   </div>
 </template>

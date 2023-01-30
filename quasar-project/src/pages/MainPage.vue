@@ -11,7 +11,7 @@
       icon="add"
       label="NEW RECIPE"
       stack
-      color="secondary"
+      color="accent"
     />
   </div>
   <div class="q-mx-xl">

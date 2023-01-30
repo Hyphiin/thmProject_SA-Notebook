@@ -474,7 +474,7 @@ const startRecognition = () => {
   min-height: 70vh;
 
   .showStartBtn {
-    display: block;
+    display: flex;
   }
 
   .hideStartBtn {
