@@ -32,7 +32,7 @@
             label="Neu"
             @click="deleteTagText"
           />
-          <p id="p-tag"></p>
+          <div id="p-tagDiv" class="p-tagDiv"></div>
           <q-btn
             dense
             class="showTextDiv_btn"
@@ -186,8 +186,6 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
-import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
-import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 import { useRouter } from "vue-router";
 
 /**
@@ -295,13 +293,13 @@ const onReset = () => {
  */
 
 onMounted(() => {
-  texts = document.querySelector(".showTextDiv");
+  tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
 });
 
-let p;
+let p = document.createElement("p");
 
-let texts = document.querySelector(".showTextDiv");
+let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
 
 window.SpeechRecognition =
@@ -311,7 +309,7 @@ let recognition = new window.SpeechRecognition();
 const startDic = ref(false);
 const recording = ref(false);
 const results = ref(null);
-const endResult = ref(null);
+const endResult = ref("");
 
 const startedIngredientList = ref(false);
 const startedSteps = ref(false);
@@ -326,13 +324,12 @@ const startRecipeDictation = () => {
 };
 
 function toggleRecording() {
-  p = document.getElementById("p-tag");
-  console.log(p);
   if (recording.value) {
     recognition.onend = null;
     recognition.stop();
     recording.value = false;
   } else {
+    tagDiv = document.querySelector(".p-tagDiv");
     recognition.onend = onEnd;
     recognition.start();
     recording.value = true;
@@ -347,15 +344,15 @@ const nextRecording = () => {
   if (startedIngredientList.value === false && startedSteps.value === false) {
     if (title.value === null) {
       title.value = endResult.value;
-      endResult.value = null;
+      endResult.value = "";
       toDoText.innerText = "Für wie viele Personen ist dieses Rezept?";
     } else if (title.value !== null && servings.value === null) {
       servings.value = endResult.value;
-      endResult.value = null;
+      endResult.value = "";
       toDoText.innerText = "Wie lange dauert die Zubereitung?";
     } else if (servings.value !== null && prepTime.value === null) {
       prepTime.value = endResult.value;
-      endResult.value = null;
+      endResult.value = "";
       toDoText.innerText =
         "Was sind die Zutaten? Sage diese im folgenden Format: '500 Gramm Tomaten' und trenne Sie jeweils mit einem lauten 'und'.";
       startedIngredientList.value = true;
@@ -366,10 +363,17 @@ const nextRecording = () => {
       allIngredients.value.push(ingredient);
     });
 
+    endResult.value = "";
+
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
       "Was sind die Arbeitsschritte? Sage bitte vor jedem Schritt: 'Nächster Schritt'.";
+    var child = tagDiv.lastElementChild;
+    while (child) {
+      tagDiv.removeChild(child);
+      child = tagDiv.lastElementChild;
+    }
   } else if (startedSteps.value === true) {
     const tempSteps = endResult.value.split(" nächster Schritt ");
     tempSteps.forEach((step) => {
@@ -400,9 +404,36 @@ function onEnd() {
 
 function onSpeak(e) {
   results.value = e.results;
-  console.log(e.results[e.results.length - 1][0].transcript);
-  p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-  endResult.value = p.innerHTML;
+  if (startedIngredientList.value) {
+    if (e.results[e.results.length - 1][0].transcript.includes("und")) {
+      p = document.createElement("p");
+      p.innerHTML = e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    } else {
+      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    }
+  } else if (startedSteps.value) {
+    if (
+      e.results[e.results.length - 1][0].transcript.includes("nächster Schritt")
+    ) {
+      p = document.createElement("p");
+      p.innerHTML = e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    } else {
+      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    }
+  } else {
+    console.log(e.results[e.results.length - 1][0].transcript);
+    p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+    endResult.value = endResult.value + p.innerHTML;
+    tagDiv.appendChild(p);
+  }
 }
 
 recognition.addEventListener("result", onSpeak);
@@ -458,7 +489,8 @@ onUnmounted(() => {
       .showTextDiv {
         display: flex;
         align-items: center;
-        p {
+        justify-content: center;
+        .p-tagDiv {
           margin: 10px;
           padding: 20px;
           box-shadow: 2px 2px 10px rgb(197, 197, 197);
@@ -466,15 +498,16 @@ onUnmounted(() => {
           font-family: "Times New Roman", Times, serif;
           font-weight: 500;
           font-size: 18px;
-          min-width: 75%;
-          width: 75%;
-          min-height: 100px;
+          min-width: 50%;
+          width: 50%;
+          min-height: 200px;
           text-align: center;
           background-color: var(--q-secondary);
         }
         .showTextDiv_btn {
           padding: 5px 10px;
           min-width: 70px;
+          margin: 20px;
         }
       }
     }
