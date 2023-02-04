@@ -1,6 +1,10 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header class="bg-secondary text-primary" height-hint="98">
+    <q-header
+      class="bg-secondary text-primary"
+      style="position: relative"
+      height-hint="98"
+    >
       <q-toolbar>
         <q-toolbar-title class="flex items-center">
           <q-icon

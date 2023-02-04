@@ -10,6 +10,8 @@
         class="bg-secondary"
         :title="recipe.title"
         :servings="recipe.servings"
+        :recipe-id="recipe.id"
+        @delete-clicked="deleteRecipe"
       />
     </div>
   </div>
@@ -27,4 +29,11 @@ import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
  * store
  */
 const storeRecipes = useStoreRecipes_STT1();
+
+/**
+ * delete recipe
+ */
+const deleteRecipe = (idToDelete) => {
+  storeRecipes.deleteRecipe(idToDelete);
+};
 </script>

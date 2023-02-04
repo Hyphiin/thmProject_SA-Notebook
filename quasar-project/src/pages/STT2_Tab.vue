@@ -5,7 +5,12 @@
       :key="recipe.id"
       class="q-mx-md q-my-sm"
     >
-      <RecipesCard :title="recipe.title" :servings="recipe.servings" />
+      <RecipesCard
+        :title="recipe.title"
+        :servings="recipe.servings"
+        :recipe-id="recipe.id"
+        @delete-clicked="deleteRecipe"
+      />
     </div>
   </div>
 </template>
@@ -22,4 +27,11 @@ import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
  * store
  */
 const storeRecipes = useStoreRecipes_STT2();
+
+/**
+ * delete recipe
+ */
+const deleteRecipe = (idToDelete) => {
+  storeRecipes.deleteRecipe(idToDelete);
+};
 </script>

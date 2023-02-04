@@ -1,21 +1,30 @@
 <template>
   <q-tabs v-model="tab" align="center" class="text-primary q-mt-sm q-mb-lg">
-    <q-tab name="STT_All" label="All Frameworks" />
+    <q-tab name="STTAll" label="All Frameworks" />
     <q-tab name="STT1" label="STT One" />
     <q-tab name="STT2" label="STT Two" />
     <q-tab name="STT3" label="STT Three" />
   </q-tabs>
   <div align="center" class="q-ma-xl">
     <q-btn
+      v-if="tab !== 'STTAll'"
       :to="recipePageLink"
       icon="add"
       label="NEW RECIPE"
       stack
       color="accent"
     />
+    <q-btn
+      v-else
+      :to="recipePageLink"
+      icon="add"
+      label="NEW RECORDING"
+      stack
+      color="accent"
+    />
   </div>
   <div class="q-mx-xl">
-    <!-- <STTAll_Tab v-if="tab === 'STT_All'" /> -->
+    <STTAllTab v-if="tab === 'STTAll'" />
     <STT1Tab v-if="tab === 'STT1'" />
     <STT2Tab v-if="tab === 'STT2'" />
     <STT3Tab v-if="tab === 'STT3'" />
@@ -27,10 +36,17 @@
  * imports
  */
 import { ref, watch } from "vue";
-// import STTAll_Tab from "../pages/AllSTT_Tab";
+import STTAllTab from "../pages/STTAll_Tab";
 import STT1Tab from "../pages/STT1_Tab";
 import STT2Tab from "../pages/STT2_Tab";
 import STT3Tab from "../pages/STT3_Tab";
+
+import { useStoreGeneral } from "src/stores/generalStore";
+
+/**
+ * Stores
+ */
+const generalStore = useStoreGeneral();
 
 /**
  * Tabs
@@ -48,12 +64,15 @@ watch(
     console.log(newValue);
     if (newValue === "STT1") {
       recipePageLink.value = "/add-recipe-STT1";
+      generalStore.changeActiveStore("SpeechToText1");
     } else if (newValue === "STT2") {
       recipePageLink.value = "/add-recipe-STT2";
+      generalStore.changeActiveStore("SpeechToText2");
       // } else if (newValue === "STT3") {
       //   recipePageLink.value = "/add-recipe-_STT3";
-    } else if (newValue === "STT_All") {
-      recipePageLink.value = "/add-recipe-STT_All";
+    } else if (newValue === "STTAll") {
+      recipePageLink.value = "/all-STT";
+      generalStore.changeActiveStore("AllStores");
     }
   }
 );

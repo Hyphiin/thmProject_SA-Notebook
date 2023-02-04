@@ -12,7 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "/src/js/firebase";
 
-const recipesCollectionRef = collection(db, "Dialogsystem1");
+const recipesCollectionRef = collection(db, "SpeechToText1");
 const recipesCollectionQuery = query(
   recipesCollectionRef,
   orderBy("date", "desc")
@@ -32,7 +32,7 @@ export const useStoreRecipes_STT1 = defineStore("storeRecipes_STT1", () => {
           id: doc.id,
           date: doc.data().date,
           title: doc.data().title,
-          sevings: doc.data().servings,
+          servings: doc.data().servings,
           prepTime: doc.data().prepTime,
           ingredients: doc.data().ingredients,
           prepSteps: doc.data().prepSteps,
@@ -50,7 +50,7 @@ export const useStoreRecipes_STT1 = defineStore("storeRecipes_STT1", () => {
     await addDoc(recipesCollectionRef, {
       date,
       title: newRecipeContent.title,
-      sevings: newRecipeContent.servings,
+      servings: newRecipeContent.servings,
       prepTime: newRecipeContent.prepTime,
       ingredients: newRecipeContent.ingredients,
       prepSteps: newRecipeContent.prepSteps,

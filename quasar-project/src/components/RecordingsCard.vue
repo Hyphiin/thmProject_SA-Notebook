@@ -2,7 +2,6 @@
   <q-card class="my-card">
     <q-card-section class="bg-primary text-white">
       <div class="text-h6">{{ title }}</div>
-      <div class="text-subtitle2">{{ servings }} Personen</div>
     </q-card-section>
 
     <q-card-section>
@@ -13,10 +12,10 @@
     <q-separator dark />
 
     <q-card-actions class="justify-end">
-      <q-btn :to="`/show-recipe/${recipeId}`" outline color="primary"
+      <q-btn :to="`/show-recipe/${recordingId}`" outline color="primary"
         >OPEN</q-btn
       >
-      <q-btn outline color="red" @click="emit('deleteClicked', recipeId)"
+      <q-btn outline color="red" @click="emit('deleteClicked', recordingId)"
         >DELETE</q-btn
       >
     </q-card-actions>
@@ -32,11 +31,7 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  servings: {
-    type: String,
-    required: true,
-  },
-  recipeId: {
+  recordingId: {
     type: Number,
     required: true,
   },
