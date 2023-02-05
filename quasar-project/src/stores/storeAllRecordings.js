@@ -30,7 +30,9 @@ export const useStoreAllRecordings = defineStore("storeAllRecordings", () => {
       querySnapshot.forEach((doc) => {
         let recording = {
           id: doc.id,
-          recording: doc.data().recording,
+          recording1: doc.data().recording1,
+          recording2: doc.data().recording2,
+          recording3: doc.data().recording3,
         };
         tempRecordings.push(recording);
       });
