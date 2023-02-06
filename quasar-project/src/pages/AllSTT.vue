@@ -24,15 +24,19 @@
           <div class="showTextDiv flex no-wrap">
             <div class="flex column items-center">
               <q-label>Speech To Text 1</q-label>
-              <div id="p-tagDiv1" class="p-tagDiv"></div>
+              <div id="p-tagDiv1" class="tagDiv p-tagDiv1"></div>
             </div>
-            <div class="flex column items-center">
+            <!-- <div class="flex column items-center">
               <q-label>Speech To Text 2</q-label>
               <div id="p-tagDiv2" class="p-tagDiv"></div>
             </div>
             <div class="flex column items-center">
               <q-label>Speech To Text 3</q-label>
               <div id="p-tagDiv3" class="p-tagDiv"></div>
+            </div> -->
+            <div class="flex column items-center">
+              <q-label>Speech To Text 4</q-label>
+              <div id="p-tagDiv4" class="tagDiv p-tagDiv4"></div>
             </div>
           </div>
         </div>
@@ -83,6 +87,7 @@ const storeRecordings = useStoreAllRecordings();
 const recordingData1 = ref("");
 const recordingData2 = ref("");
 const recordingData3 = ref("");
+const recordingData4 = ref("");
 
 /**
  * save in store
@@ -101,6 +106,7 @@ const onSubmit = () => {
       recordingData1,
       recordingData2,
       recordingData3,
+      recordingData4,
     });
 
     Notify.create({
@@ -118,20 +124,22 @@ const onSubmit = () => {
  * STT1
  */
 onMounted(() => {
-  tagDiv = document.querySelector(".p-tagDiv");
+  tagDiv1 = document.querySelector(".p-tagDiv1");
+  tagDiv4 = document.querySelector(".p-tagDiv4");
 });
 
 let p = document.createElement("p");
 
 let tagDiv = document.querySelector(".p-tagDiv");
 
-window.SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
+// window.SpeechRecognition = window.webkitSpeechRecognition;
 
-let recognition = new window.SpeechRecognition();
+let recognition1 = new window.SpeechRecognition(window.webkitSpeechRecognition);
+let recognition2 = new window.SpeechRecognition(window.SpeechRecognition);
 const startDic = ref(false);
 const recording = ref(false);
 const result1 = ref(null);
+const result4 = ref(null);
 
 const recognitionEnded = ref(false);
 
@@ -155,6 +163,7 @@ const nextRecording = () => {
   p.innerHTML = "";
 
   recordingData1.value = "";
+  recordingData4.value = "";
 
   startDic.value = false;
   recognitionEnded.value = true;
@@ -165,8 +174,10 @@ const nextRecording = () => {
 
 const resetText = () => {
   result1.value = null;
+  result4.value = null;
   p.innerHTML = "";
   recordingData1.value = "";
+  recordingData4.value = "";
 };
 
 function onEnd() {
@@ -198,7 +209,7 @@ recognition.addEventListener("result", onSpeak);
         display: flex;
         align-items: center;
         justify-content: center;
-        .p-tagDiv {
+        .tagDiv {
           margin: 10px;
           padding: 20px;
           box-shadow: 2px 2px 10px rgb(197, 197, 197);

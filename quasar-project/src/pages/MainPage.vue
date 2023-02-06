@@ -4,6 +4,7 @@
     <q-tab name="STT1" label="STT One" />
     <q-tab name="STT2" label="STT Two" />
     <q-tab name="STT3" label="STT Three" />
+    <q-tab name="STT4" label="STT Four" />
   </q-tabs>
   <div align="center" class="q-ma-xl">
     <q-btn
@@ -28,6 +29,7 @@
     <STT1Tab v-if="tab === 'STT1'" />
     <STT2Tab v-if="tab === 'STT2'" />
     <STT3Tab v-if="tab === 'STT3'" />
+    <STT4Tab v-if="tab === 'STT4'" />
   </div>
 </template>
 
@@ -40,6 +42,7 @@ import STTAllTab from "../pages/STTAll_Tab";
 import STT1Tab from "../pages/STT1_Tab";
 import STT2Tab from "../pages/STT2_Tab";
 import STT3Tab from "../pages/STT3_Tab";
+import STT4Tab from "../pages/STT4_Tab";
 
 import { useStoreGeneral } from "src/stores/generalStore";
 
@@ -68,8 +71,12 @@ watch(
     } else if (newValue === "STT2") {
       recipePageLink.value = "/add-recipe-STT2";
       generalStore.changeActiveStore("SpeechToText2");
-      // } else if (newValue === "STT3") {
-      //   recipePageLink.value = "/add-recipe-_STT3";
+    } else if (newValue === "STT3") {
+      recipePageLink.value = "/add-recipe-STT3";
+      generalStore.changeActiveStore("SpeechToText3");
+    } else if (newValue === "STT4") {
+      recipePageLink.value = "/add-recipe-STT4";
+      generalStore.changeActiveStore("SpeechToText4");
     } else if (newValue === "STTAll") {
       recipePageLink.value = "/all-STT";
       generalStore.changeActiveStore("AllStores");

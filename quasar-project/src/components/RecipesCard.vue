@@ -2,7 +2,7 @@
   <q-card class="my-card">
     <q-card-section class="bg-primary text-white">
       <div class="text-h6">{{ title }}</div>
-      <div class="text-subtitle2">{{ servings }} Personen</div>
+      <div class="text-subtitle2">{{ servings }}</div>
     </q-card-section>
 
     <q-card-section>

@@ -302,7 +302,7 @@ let p = document.createElement("p");
 let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
 
-window.SpeechRecognition = window.webkitSpeechRecognition;
+window.SpeechRecognition = window.SpeechRecognition;
 
 let recognition = new window.SpeechRecognition();
 const startDic = ref(false);
