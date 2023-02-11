@@ -31,11 +31,11 @@ const routes = [
         name: "addRecipe_STT2",
         component: AddRecipePage_STT2,
       },
-      // {
-      //   path: "/add-recipe-STT3",
-      //   name: "addRecipe_STT3",
-      //   component: AddRecipePage_STT3,
-      // },
+      {
+        path: "/add-recipe-STT3",
+        name: "addRecipe_STT3",
+        component: AddRecipePage_STT3,
+      },
     ],
   },
 
