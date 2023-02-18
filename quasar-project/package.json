@@ -14,13 +14,19 @@
     "@quasar/extras": "^1.0.0",
     "artyom.js": "^1.0.6",
     "core-js": "^3.6.5",
+    "engine.io": "^6.4.0",
     "firebase": "^9.14.0",
-    "pinia": "^2.0.26",
+    "pinia": "^2.0.30",
     "quasar": "^2.6.0",
     "recordrtc": "^5.6.2",
+    "should": "^13.2.3",
+    "socket.io": "^4.6.0",
+    "socket.io-adapter": "^2.5.2",
+    "socket.io-client": "^4.6.0",
     "vue": "^3.0.0",
     "vue-i18n": "^9.0.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.0.0",
+    "vue-socket.io": "^3.0.10"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
@@ -42,6 +48,11 @@
     "last 10 iOS versions",
     "last 5 Opera versions"
   ],
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
+  },
   "engines": {
     "node": ">= 12.22.1",
     "npm": ">= 6.13.4",

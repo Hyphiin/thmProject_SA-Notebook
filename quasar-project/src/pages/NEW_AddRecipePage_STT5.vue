@@ -183,10 +183,14 @@
 /**
  * imports
  */
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, defineComponent, inject } from "vue";
 import { Notify } from "quasar";
-import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
+import { useStoreRecipes_STT5 } from "src/stores/storeRecipes_STT5";
 import { useRouter } from "vue-router";
+import {socket} from "../boot/ezglobals";
+
+
+const DOWNSAMPLING_WORKER = "../boot/downsampling_worker.js";
 
 /**
  * router
@@ -196,7 +200,7 @@ const router = useRouter();
 /**
  * store
  */
-const storeRecipes_STT1 = useStoreRecipes_STT1();
+const storeRecipes_STT5 = useStoreRecipes_STT5();
 
 /**
  * recipe data
@@ -261,7 +265,7 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipes_STT1.addRecipe({
+    storeRecipes_STT5.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
@@ -288,14 +292,122 @@ const onReset = () => {
   servings.value = null;
 };
 
+	const	connected= ref(false);
+
+
 /**
  * SpeechRecognition
  */
+ const socket1 = socket;
+ let connect;
 
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
+  
+  //socket1.connect('http://localhost:4000', {});
+	// console.log(socket1.connect('http://localhost:4000', (e) => {
+  //   if(e.connected){
+  //     connected.value = true
+  //   }
+  // }));	
+  console.log(socket1);
+  connect = socket1.connect('http://localhost:4000', (e) => {
+      connected.value = true;
+  });
+  console.log(connected.value);
 });
+
+let mediaStream;
+let mediaStreamSource;
+let processor;
+let audioContext;
+
+const startMicrophone = () => {
+		audioContext = new AudioContext();
+		
+		const success = (stream) => {
+			console.log('started recording');
+			mediaStream = stream;
+			mediaStreamSource = audioContext.createMediaStreamSource(stream);
+			processor = createAudioProcessor(audioContext, mediaStreamSource);
+			mediaStreamSource.connect(processor);
+		};
+		
+		const fail = (e) => {
+			console.error('recording failure', e);
+		};
+		
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia({
+				video: false,
+				audio: true
+			})
+			.then(success)
+			.catch(fail);
+		}
+		else {
+			navigator.getUserMedia({
+				video: false,
+				audio: true
+			}, success, fail);
+		}
+	};
+
+const  stopRecording = () => {
+		if (recording.value) {
+			if (socket1.connected) {
+				socket1.emit('stream-reset');
+			}
+			//clearInterval(recordingInterval);
+      recording.value = false;
+			stopMicrophone();
+		}
+	};
+const stopMicrophone = () => {
+		if (mediaStream) {
+			mediaStream.getTracks()[0].stop();
+		}
+		if (mediaStreamSource) {
+			mediaStreamSource.disconnect();
+		}
+		if (processor) {
+			processor.shutdown();
+		}
+		if (audioContext) {
+			audioContext.close();
+		}
+	};
+
+
+ const createAudioProcessor = (audioContext, audioSource) => {
+		processor = audioContext.createScriptProcessor(4096, 1, 1);
+		
+		const sampleRate = audioSource.context.sampleRate;
+		
+		let downsampler = new Worker(new URL('../downsampling_worker.js', import.meta.url));
+		downsampler.postMessage({command: "init", inputSampleRate: sampleRate});
+		downsampler.onmessage = (e) => {
+			//if (connected.value) {
+				let string = connect.emit('stream-data', e.data.buffer);
+        console.log(string);
+			//}
+		};
+		
+		processor.onaudioprocess = (event) => {
+			var data = event.inputBuffer.getChannelData(0);
+			downsampler.postMessage({command: "process", inputFrame: data});
+		};
+		
+		processor.shutdown = () => {
+			processor.disconnect();
+			//onaudioprocess = null;
+		};
+		
+		processor.connect(audioContext.destination);
+		
+		return processor;
+	}
 
 let p = document.createElement("p");
 
@@ -304,7 +416,7 @@ let toDoText = document.querySelector(".to-do-text");
 
 window.SpeechRecognition = window.webkitSpeechRecognition;
 
-let recognition = new window.SpeechRecognition();
+//let recognition = new window.SpeechRecognition();
 const startDic = ref(false);
 const recording = ref(false);
 const results = ref(null);
@@ -314,7 +426,7 @@ const startedIngredientList = ref(false);
 const startedSteps = ref(false);
 const recognitionEnded = ref(false);
 
-recognition.continuous = true;
+//recognition.continuous = true;
 
 const startRecipeDictation = () => {
   startDic.value = true;
@@ -324,13 +436,13 @@ const startRecipeDictation = () => {
 
 function toggleRecording() {
   if (recording.value) {
-    recognition.onend = null;
-    recognition.stop();
+    //recognition.onend = null;
+    stopRecording();
     recording.value = false;
   } else {
     tagDiv = document.querySelector(".p-tagDiv");
-    recognition.onend = onEnd;
-    recognition.start();
+    //recognition.onend = onEnd;
+    startMicrophone();
     recording.value = true;
   }
 }
@@ -385,8 +497,8 @@ const nextRecording = () => {
     startedSteps.value = false;
     startDic.value = false;
     recognitionEnded.value = true;
-    recognition.onend = null;
-    recognition.stop();
+    // recognition.onend = null;
+    // recognition.stop();
     recording.value = false;
   }
 };
@@ -398,7 +510,7 @@ const deleteTagText = () => {
 
 function onEnd() {
   console.log("Speech recognition has stopped. Starting again ...");
-  recognition.start();
+  startMicrophone();
 }
 
 function onSpeak(e) {
@@ -435,14 +547,14 @@ function onSpeak(e) {
   }
 }
 
-recognition.addEventListener("result", onSpeak);
+// recognition.addEventListener("result", onSpeak);
 
 onUnmounted(() => {
   console.log("Unmounted");
   recognitionEnded.value = true;
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
-  recognition.stop();
+  // recognition.removeEventListener("result", () => {});
+  // recognition.removeEventListener("end", () => {});
+  // recognition.stop();
 });
 </script>
 

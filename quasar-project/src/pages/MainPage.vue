@@ -44,7 +44,7 @@ import STT1Tab from "../pages/STT1_Tab";
 import STT2Tab from "../pages/STT2_Tab";
 import STT3Tab from "../pages/STT3_Tab";
 import STT4Tab from "../pages/STT4_Tab";
-import STT4Tab from "../pages/STT5_Tab";
+import STT5Tab from "../pages/STT5_Tab";
 
 import { useStoreGeneral } from "src/stores/generalStore";
 
