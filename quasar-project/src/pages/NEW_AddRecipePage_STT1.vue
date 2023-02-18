@@ -12,6 +12,7 @@
             size="32px"
             round
             stack
+            id="recBtn"
             color="accent"
             :icon="recording === false ? 'mic' : 'mic_off'"
             @click="toggleRecording"
@@ -305,6 +306,9 @@ let toDoText = document.querySelector(".to-do-text");
 window.SpeechRecognition = window.webkitSpeechRecognition;
 
 let recognition = new window.SpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
+
 const startDic = ref(false);
 const recording = ref(false);
 const results = ref(null);
@@ -313,8 +317,6 @@ const endResult = ref("");
 const startedIngredientList = ref(false);
 const startedSteps = ref(false);
 const recognitionEnded = ref(false);
-
-recognition.continuous = true;
 
 const startRecipeDictation = () => {
   startDic.value = true;
@@ -327,6 +329,7 @@ function toggleRecording() {
     recognition.onend = null;
     recognition.stop();
     recording.value = false;
+    document.getElementById("recBtn").style.boxShadow = "none";
   } else {
     tagDiv = document.querySelector(".p-tagDiv");
     recognition.onend = onEnd;
@@ -353,32 +356,22 @@ const nextRecording = () => {
       prepTime.value = endResult.value;
       endResult.value = "";
       toDoText.innerText =
-        "Was sind die Zutaten? Sage diese im folgenden Format: '500 Gramm Tomaten' und trenne Sie jeweils mit einem lauten 'und'.";
+        "Was sind die Zutaten? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit der nächsten weitermachst.";
       startedIngredientList.value = true;
     }
   } else if (startedIngredientList.value === true) {
-    const tempIngridents = endResult.value.split(" und ");
-    tempIngridents.forEach((ingredient) => {
-      allIngredients.value.push(ingredient);
-    });
-
     endResult.value = "";
 
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
-      "Was sind die Arbeitsschritte? Sage bitte vor jedem Schritt: 'Nächster Schritt'.";
+      "Was sind die Arbeitsschritte?  Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
     var child = tagDiv.lastElementChild;
     while (child) {
       tagDiv.removeChild(child);
       child = tagDiv.lastElementChild;
     }
   } else if (startedSteps.value === true) {
-    const tempSteps = endResult.value.split(" nächster Schritt ");
-    tempSteps.forEach((step) => {
-      allSteps.value.push(step);
-    });
-
     toDoText.innerText =
       "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
 
@@ -404,34 +397,44 @@ function onEnd() {
 function onSpeak(e) {
   results.value = e.results;
   if (startedIngredientList.value) {
-    if (e.results[e.results.length - 1][0].transcript.includes("und")) {
-      p = document.createElement("p");
+    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
       tagDiv.appendChild(p);
+
+      allIngredients.value.push(p.innerHTML);
+      p = document.createElement("p");
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
     } else {
-      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-      tagDiv.appendChild(p);
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
     }
   } else if (startedSteps.value) {
-    if (
-      e.results[e.results.length - 1][0].transcript.includes("nächster Schritt")
-    ) {
-      p = document.createElement("p");
+    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
       tagDiv.appendChild(p);
+
+      allSteps.value.push(p.innerHTML);
+      p = document.createElement("p");
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
     } else {
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
+    }
+  } else {
+    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
       tagDiv.appendChild(p);
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
+    } else {
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
     }
-  } else {
-    console.log(e.results[e.results.length - 1][0].transcript);
-    p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-    endResult.value = endResult.value + p.innerHTML;
-    tagDiv.appendChild(p);
   }
 }
 
@@ -444,6 +447,9 @@ onUnmounted(() => {
   recognition.removeEventListener("end", () => {});
   recognition.stop();
 });
+
+const grammar =
+  "#JSGF V1.0; grammar sizes; public <size> = gramm  | kilo  | kilogramm | milliliter ;";
 </script>
 
 <style lang="scss">
