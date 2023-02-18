@@ -188,6 +188,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
 import { useRouter } from "vue-router";
+import { checkSize, checkNumber } from "src/js/exportFunctions";
 
 /**
  * router
@@ -335,6 +336,8 @@ function toggleRecording() {
     recognition.onend = onEnd;
     recognition.start();
     recording.value = true;
+    document.getElementById("recBtn").style.boxShadow =
+      "0px 0px 15px 10px #64e890 ";
   }
 }
 
@@ -400,9 +403,19 @@ function onSpeak(e) {
     if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
-      tagDiv.appendChild(p);
 
+      let foundNumber = checkNumber(p.innerHTML);
+      if (foundNumber !== null) {
+        p.innerHTML = foundNumber;
+      }
+
+      let foundSize = checkSize(p.innerHTML);
+      if (foundSize !== null) {
+        p.innerHTML = foundSize;
+      }
       allIngredients.value.push(p.innerHTML);
+
+      tagDiv.appendChild(p);
       p = document.createElement("p");
       document.getElementById("recBtn").style.boxShadow =
         "0px 0px 15px 10px #64e890 ";
@@ -428,6 +441,11 @@ function onSpeak(e) {
     if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
+      let foundNumber = checkNumber(p.innerHTML);
+      if (foundNumber !== null) {
+        p.innerHTML = foundNumber;
+        endResult.value = foundNumber;
+      }
       tagDiv.appendChild(p);
       document.getElementById("recBtn").style.boxShadow =
         "0px 0px 15px 10px #64e890 ";
@@ -447,9 +465,6 @@ onUnmounted(() => {
   recognition.removeEventListener("end", () => {});
   recognition.stop();
 });
-
-const grammar =
-  "#JSGF V1.0; grammar sizes; public <size> = gramm  | kilo  | kilogramm | milliliter ;";
 </script>
 
 <style lang="scss">

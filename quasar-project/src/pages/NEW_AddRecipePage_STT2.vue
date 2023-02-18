@@ -31,6 +31,7 @@
             class="showTextDiv_btn"
             color="primary"
             label="Neu"
+            :disabled="!startedIngredientList && !startedSteps"
             @click="deleteTagText"
           />
           <div id="p-tagDiv" class="p-tagDiv"></div>
@@ -189,7 +190,7 @@ import { Notify } from "quasar";
 import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
 import { useRouter } from "vue-router";
 import Artyom from "artyom.js";
-
+import { checkSize, checkNumber } from "src/js/exportFunctions";
 /**
  * router
  */
@@ -323,6 +324,16 @@ var settings = {
         document.getElementById("recBtn").style.boxShadow =
           "0px 0px 15px 10px #f96858 ";
       } else {
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
+
+        let foundSize = checkSize(p.innerHTML);
+        if (foundSize !== null) {
+          p.innerHTML = foundSize;
+        }
+
         allIngredients.value.push(p.innerHTML);
         p = document.createElement("p");
         document.getElementById("recBtn").style.boxShadow =
@@ -346,6 +357,10 @@ var settings = {
       if (text && text !== "" && text.length !== 0) {
         p.innerHTML = text;
         endResult.value = text;
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
         tagDiv.appendChild(p);
         document.getElementById("recBtn").style.boxShadow =
           "0px 0px 15px 10px #f96858 ";
@@ -367,15 +382,6 @@ var settings = {
 
 var UserDictation = ref(artyom.newDictation(settings));
 
-watch(
-  () => UserDictation.value,
-  (newValue) => {
-    console.log("newVal: ", newValue);
-  }
-);
-
-// Link the events to buttons in the document
-
 const toggleRecording = () => {
   if (recording.value === true) {
     recording.value = false;
@@ -390,8 +396,6 @@ const toggleRecording = () => {
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
-
-  // recognition = artyom.newDictation(settings);
 });
 
 let p = document.createElement("p");
@@ -414,79 +418,6 @@ const startRecipeDictation = () => {
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
   recognitionEnded.value = false;
 };
-
-// function toggleRecording() {
-//   if (recording.value === true) {
-//     console.log("toggleRec", recording.value);
-//     recognition.onend = null;
-//     recording.value = false;
-//     recognition.stop();
-//   } else {
-//     console.log("toggleRec", recording.value);
-//     tagDiv = document.querySelector(".p-tagDiv");
-//     recognition.start();
-//     recording.value = true;
-//   }
-// }
-
-// var settings = {
-//   continuous: false, // Don't stop never because i have https connection
-//   onResult: function (text) {
-//     console.log("TEXT: ", text);
-//     results.value = e.results;
-//     if (startedIngredientList.value) {
-//       if (e.results[e.results.length - 1][0].transcript.includes("und")) {
-//         p = document.createElement("p");
-//         p.innerHTML = e.results[e.results.length - 1][0].transcript;
-//         endResult.value = endResult.value + p.innerHTML;
-//         tagDiv.appendChild(p);
-//       } else {
-//         p.innerHTML =
-//           p.innerHTML + e.results[e.results.length - 1][0].transcript;
-//         endResult.value = endResult.value + p.innerHTML;
-//         tagDiv.appendChild(p);
-//       }
-//     } else if (startedSteps.value) {
-//       if (
-//         e.results[e.results.length - 1][0].transcript.includes(
-//           "nächster Schritt"
-//         )
-//       ) {
-//         p = document.createElement("p");
-//         p.innerHTML = e.results[e.results.length - 1][0].transcript;
-//         endResult.value = endResult.value + p.innerHTML;
-//         tagDiv.appendChild(p);
-//       } else {
-//         p.innerHTML =
-//           p.innerHTML + e.results[e.results.length - 1][0].transcript;
-//         endResult.value = endResult.value + p.innerHTML;
-//         tagDiv.appendChild(p);
-//       }
-//     } else {
-//       console.log(e.results[e.results.length - 1][0].transcript);
-//       p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-//       endResult.value = endResult.value + p.innerHTML;
-//       tagDiv.appendChild(p);
-//     }
-//   },
-//   onStart: function () {
-//     console.log("Dictation started by the user");
-//   },
-//   onEnd: function () {
-//     // console.log("Speech recognition has stopped. Starting again ...");
-//     // recognition.start();
-//     console.log("Dictation stopped by the user");
-//   },
-// };
-
-// // const startRecognition = () => {
-// //   recognition.start();
-// //   displayStartBtn.value = false;
-// //   recognitionStarted.value = true;
-// //   startedIngredientList.value = false;
-// //   startedSteps.value = false;
-// //   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
-// // };
 
 const nextRecording = () => {
   results.value = null;
@@ -536,29 +467,11 @@ const nextRecording = () => {
 };
 
 const deleteTagText = () => {
+  console.log("pushed");
   results.value = null;
   p.innerHTML = "";
   endResult.value = "";
 };
-
-// // artyom.addCommands({
-// //   indexes: ['Add * ingredient'],
-// //   smart: true,
-// //   action: (i, wildcard) => {
-// //     allIngredients.value.push(wildcard);
-// //   },
-// // });
-
-// // function onEnd() {
-// //   console.log("Speech recognition has stopped. Starting again ...");
-// //   recognition.start();
-// // }
-
-// // function onSpeak(e) {
-
-// // }
-
-// // recognition.addEventListener("result", onSpeak);
 
 onUnmounted(() => {
   console.log("Unmounted");
