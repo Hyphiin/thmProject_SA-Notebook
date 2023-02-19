@@ -1,179 +1,77 @@
 <template>
   <q-btn color="primary" outline class="q-ma-md" to="/">Abbrechen</q-btn>
   <div class="content-div flex column q-pa-md content-center justify-between">
-    <div
-      v-if="recognitionEnded === false"
-      class="texts flex column content-center q-ma-md justify-center"
-    >
+    <div v-if="recognitionEnded === false" class="texts flex column content-center q-ma-md justify-center">
       <p class="to-do-text">Mit der Rezepteingabe starten</p>
       <div v-if="startDic === true" class="btnDiv">
         <div class="recBtn flex justify-center">
-          <q-btn
-            size="32px"
-            round
-            stack
-            color="accent"
-            :icon="recording === false ? 'mic' : 'mic_off'"
-            @click="toggleRecording"
-          >
+          <q-btn size="32px" round stack color="accent" :icon="recording === false ? 'mic' : 'mic_off'"
+            @click="toggleRecording">
             <q-tooltip anchor="center right" self="center start">
               {{
-                recording === false ? "Aufnahme starten" : "Aufnahme stoppen"
+  recording === false ? "Aufnahme starten" : "Aufnahme stoppen"
               }}
             </q-tooltip>
           </q-btn>
         </div>
         <div class="showTextDiv flex no-wrap">
-          <q-btn
-            dense
-            outline
-            class="showTextDiv_btn"
-            color="primary"
-            label="Neu"
-            @click="deleteTagText"
-          />
+          <q-btn dense outline class="showTextDiv_btn" color="primary" label="Neu" @click="deleteTagText" />
           <div id="p-tagDiv" class="p-tagDiv"></div>
-          <q-btn
-            dense
-            class="showTextDiv_btn"
-            color="primary"
-            label="Weiter"
-            @click="nextRecording"
-          />
+          <q-btn dense class="showTextDiv_btn" color="primary" label="Weiter" @click="nextRecording" />
         </div>
       </div>
-      <q-btn
-        color="accent"
-        label="Starten"
-        :class="startDic === false ? 'showStartBtn' : 'hideStartBtn'"
-        @click="startRecipeDictation"
-      />
+      <q-btn color="accent" label="Starten" :class="startDic === false ? 'showStartBtn' : 'hideStartBtn'"
+        @click="startRecipeDictation" />
     </div>
 
-    <q-form
-      v-if="recognitionEnded === true"
-      @submit="onSubmit"
-      @reset="onReset"
-      class="q-gutter-md"
-    >
+    <q-form v-if="recognitionEnded === true" @submit="onSubmit" @reset="onReset" class="q-gutter-md">
       <p>
         Das Rezept wurde erfolgreich erkannt, im unteren Formular kannst du
         alles noch mal prüfen.
       </p>
-      <q-input
-        filled
-        v-model="title"
-        label="Titel des Rezeptes"
-        lazy-rules
-        :rules="[
-          (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
-        ]"
-      />
-      <q-input
-        filled
-        v-model="servings"
-        label="Für wie viele Personen"
-        lazy-rules
-        hint="Für wie viele Personen ist dieses Rezept?"
-      />
+      <q-input filled v-model="title" label="Titel des Rezeptes" lazy-rules :rules="[
+        (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
+      ]" />
+      <q-input filled v-model="servings" label="Für wie viele Personen" lazy-rules
+        hint="Für wie viele Personen ist dieses Rezept?" />
 
-      <q-input
-        filled
-        v-model="prepTime"
-        label="Zubereitungszeit"
-        lazy-rules
-        hint="Wie lange dauert es dieses Rezept zu kochen?"
-      />
+      <q-input filled v-model="prepTime" label="Zubereitungszeit" lazy-rules
+        hint="Wie lange dauert es dieses Rezept zu kochen?" />
       <div class="bg-grey-3 q-pa-md">
         <div class="newIngredient flex">
-          <q-input
-            filled
-            v-model="newIngredient"
-            label="Zutat"
-            class="q-mr-sm"
-            :error="displayErrorIngredients"
-            error-message="Bitte ausfüllen"
-          />
-          <q-btn
-            class="q-ml-sm"
-            label=""
-            icon="add"
-            color="primary"
-            style="max-height: 56px"
-            @click="addIngredient"
-          />
+          <q-input filled v-model="newIngredient" label="Zutat" class="q-mr-sm" :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen" />
+          <q-btn class="q-ml-sm" label="" icon="add" color="primary" style="max-height: 56px" @click="addIngredient" />
         </div>
         <div class="addIngredient flex justify-center"></div>
         <p class="text-subtitle1 q-mt-lg">Zutaten:</p>
-        <div
-          v-for="(ingredient, idx) in allIngredients"
-          :key="idx"
-          class="flex flex-col justify-between"
-        >
+        <div v-for="(ingredient, idx) in allIngredients" :key="idx" class="flex flex-col justify-between">
           <div>
             <span class="text-bold q-mr-md">{{ ingredient }}</span>
           </div>
 
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteIngredient(idx)"
-          />
+          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteIngredient(idx)" />
         </div>
       </div>
       <div class="bg-grey-3 q-pa-md">
         <div class="newStep flex justify-between">
-          <q-input
-            filled
-            type="textarea"
-            v-model="newStep"
-            :label="'Schritt ' + (allSteps.length + 1)"
-            class="q-mr-sm"
-            :error="displayErrorSteps"
-            error-message="Bitte ausfüllen"
-            style="min-width: 470px"
-          />
-          <q-btn
-            label=""
-            icon="add"
-            color="primary"
-            @click="addStep"
-            style="max-height: 56px"
-          />
+          <q-input filled type="textarea" v-model="newStep" :label="'Schritt ' + (allSteps.length + 1)" class="q-mr-sm"
+            :error="displayErrorSteps" error-message="Bitte ausfüllen" style="min-width: 470px" />
+          <q-btn label="" icon="add" color="primary" @click="addStep" style="max-height: 56px" />
         </div>
         <p class="text-subtitle1 q-mt-lg">Schritte:</p>
-        <div
-          v-for="(step, idx) in allSteps"
-          :key="idx"
-          class="flex flex-col justify-between"
-        >
+        <div v-for="(step, idx) in allSteps" :key="idx" class="flex flex-col justify-between">
           <div>
             <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
             <span> {{ step }}</span>
           </div>
 
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteStep(idx)"
-          />
+          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteStep(idx)" />
         </div>
       </div>
       <div>
         <q-btn label="Speichern" type="submit" color="primary" />
-        <q-btn
-          label="Zurücksetzen"
-          type="reset"
-          color="primary"
-          flat
-          class="q-ml-sm"
-        />
+        <q-btn label="Zurücksetzen" type="reset" color="primary" flat class="q-ml-sm" />
       </div>
     </q-form>
   </div>
@@ -187,7 +85,7 @@ import { ref, onMounted, onUnmounted, defineComponent, inject } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT5 } from "src/stores/storeRecipes_STT5";
 import { useRouter } from "vue-router";
-import {socket} from "../boot/ezglobals";
+import { socket } from "../boot/ezglobals";
 
 
 const DOWNSAMPLING_WORKER = "../boot/downsampling_worker.js";
@@ -292,30 +190,49 @@ const onReset = () => {
   servings.value = null;
 };
 
-	const	connected= ref(false);
+const connected = ref(false);
 
 
 /**
  * SpeechRecognition
  */
- const socket1 = socket;
- let connect;
+const socket1 = socket;
+let connect;
+let resultsid = 0;
+let recognitionOutput = [];
 
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
-  
+
   //socket1.connect('http://localhost:4000', {});
-	// console.log(socket1.connect('http://localhost:4000', (e) => {
+  // console.log(socket1.connect('http://localhost:4000', (e) => {
   //   if(e.connected){
   //     connected.value = true
   //   }
   // }));	
   console.log(socket1);
   connect = socket1.connect('http://localhost:4000', (e) => {
-      connected.value = true;
+    connected.value = true;
+
+    
+
   });
   console.log(connected.value);
+
+  connect.on('recognize', (results) => {
+      console.log('recognized:', results);
+      recognitionOutput.unshift(results);
+
+    });
+
+  connect.on('disconnect', () => {
+    console.log('socket disconnected');
+    connected.value = false;
+    stopRecording();
+  });
+
+
 });
 
 let mediaStream;
@@ -324,90 +241,94 @@ let processor;
 let audioContext;
 
 const startMicrophone = () => {
-		audioContext = new AudioContext();
-		
-		const success = (stream) => {
-			console.log('started recording');
-			mediaStream = stream;
-			mediaStreamSource = audioContext.createMediaStreamSource(stream);
-			processor = createAudioProcessor(audioContext, mediaStreamSource);
-			mediaStreamSource.connect(processor);
-		};
-		
-		const fail = (e) => {
-			console.error('recording failure', e);
-		};
-		
-		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-			navigator.mediaDevices.getUserMedia({
-				video: false,
-				audio: true
-			})
-			.then(success)
-			.catch(fail);
-		}
-		else {
-			navigator.getUserMedia({
-				video: false,
-				audio: true
-			}, success, fail);
-		}
-	};
+  audioContext = new AudioContext();
 
-const  stopRecording = () => {
-		if (recording.value) {
-			if (socket1.connected) {
-				socket1.emit('stream-reset');
-			}
-			//clearInterval(recordingInterval);
-      recording.value = false;
-			stopMicrophone();
-		}
-	};
+  const success = (stream) => {
+    console.log('started recording');
+    mediaStream = stream;
+    mediaStreamSource = audioContext.createMediaStreamSource(stream);
+    processor = createAudioProcessor(audioContext, mediaStreamSource);
+    mediaStreamSource.connect(processor);
+  };
+
+  const fail = (e) => {
+    console.error('recording failure', e);
+  };
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({
+      video: false,
+      audio: true
+    })
+      .then(success)
+      .catch(fail);
+  }
+  else {
+    navigator.getUserMedia({
+      video: false,
+      audio: true
+    }, success, fail);
+  }
+};
+
+const stopRecording = () => {
+  if (recording.value) {
+    if (socket1.connected) {
+      socket1.emit('stream-reset');
+    }
+    //clearInterval(recordingInterval);
+    recording.value = false;
+    stopMicrophone();
+  }
+};
 const stopMicrophone = () => {
-		if (mediaStream) {
-			mediaStream.getTracks()[0].stop();
-		}
-		if (mediaStreamSource) {
-			mediaStreamSource.disconnect();
-		}
-		if (processor) {
-			processor.shutdown();
-		}
-		if (audioContext) {
-			audioContext.close();
-		}
-	};
+  if (mediaStream) {
+    mediaStream.getTracks()[0].stop();
+  }
+  if (mediaStreamSource) {
+    mediaStreamSource.disconnect();
+  }
+  if (processor) {
+    processor.shutdown();
+  }
+  if (audioContext) {
+    audioContext.close();
+  }
+};
 
 
- const createAudioProcessor = (audioContext, audioSource) => {
-		processor = audioContext.createScriptProcessor(4096, 1, 1);
-		
-		const sampleRate = audioSource.context.sampleRate;
-		
-		let downsampler = new Worker(new URL('../downsampling_worker.js', import.meta.url));
-		downsampler.postMessage({command: "init", inputSampleRate: sampleRate});
-		downsampler.onmessage = (e) => {
-			//if (connected.value) {
-				let string = connect.emit('stream-data', e.data.buffer);
-        console.log(string);
-			//}
-		};
-		
-		processor.onaudioprocess = (event) => {
-			var data = event.inputBuffer.getChannelData(0);
-			downsampler.postMessage({command: "process", inputFrame: data});
-		};
-		
-		processor.shutdown = () => {
-			processor.disconnect();
-			//onaudioprocess = null;
-		};
-		
-		processor.connect(audioContext.destination);
-		
-		return processor;
-	}
+const createAudioProcessor = (audioContext, audioSource) => {
+  processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+  const sampleRate = audioSource.context.sampleRate;
+
+  let downsampler = new Worker(new URL('../downsampling_worker.js', import.meta.url));
+  downsampler.postMessage({ command: "init", inputSampleRate: sampleRate });
+  downsampler.onmessage = (e) => {
+    //if (connected.value) {
+    let string;
+    connect.emit('stream-data', e.data.buffer);
+    //    (e) => {
+    //     console.log(e);
+    //  });
+    //   console.log( connect.emit('stream-data', e.data.buffer));
+    //}
+  };
+
+  processor.onaudioprocess = (event) => {
+    var data = event.inputBuffer.getChannelData(0);
+    downsampler.postMessage({ command: "process", inputFrame: data });
+  };
+
+  processor.shutdown = () => {
+    processor.disconnect();
+    //onaudioprocess = null;
+  };
+
+  processor.connect(audioContext.destination);
+
+  return processor;
+}
 
 let p = document.createElement("p");
 
@@ -597,10 +518,12 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       width: 80%;
+
       .showTextDiv {
         display: flex;
         align-items: center;
         justify-content: center;
+
         .p-tagDiv {
           margin: 10px;
           padding: 20px;
@@ -615,6 +538,7 @@ onUnmounted(() => {
           text-align: center;
           background-color: var(--q-secondary);
         }
+
         .showTextDiv_btn {
           padding: 5px 10px;
           min-width: 70px;
