@@ -488,7 +488,7 @@ const nextRecording = () => {
       prepTime.value = endResult.value;
       endResult.value = "";
       toDoText.innerText =
-        "Was sind die Zutaten? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit der nächsten weitermachst.";
+        "Was sind die Zutaten? Warte bitte bis der Text angezeigt wird, bevor du mit der nächsten weitermachst.";
       startedIngredientList.value = true;
     }
   } else if (startedIngredientList.value === true) {
@@ -497,7 +497,7 @@ const nextRecording = () => {
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
-      "Was sind die Arbeitsschritte? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
+      "Was sind die Arbeitsschritte?  Warte bitte bis der Text angezeigt wird, bevor du mit dem nächsten weitermachst.";
     var child = tagDiv.lastElementChild;
     while (child) {
       tagDiv.removeChild(child);
