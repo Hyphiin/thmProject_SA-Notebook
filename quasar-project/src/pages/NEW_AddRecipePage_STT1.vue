@@ -29,6 +29,7 @@
             dense
             outline
             class="showTextDiv_btn"
+            :class="startedIngredientList || startedSteps ? '' : 'hideBtn'"
             color="primary"
             label="Neu"
             @click="deleteTagText"
@@ -393,8 +394,7 @@ const deleteTagText = () => {
 };
 
 function onEnd() {
-  console.log("Speech recognition has stopped. Starting again ...");
-  recognition.start();
+  console.log("Speech recognition has stopped.");
 }
 
 function onSpeak(e) {
@@ -402,7 +402,7 @@ function onSpeak(e) {
   if (startedIngredientList.value) {
     if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
+      endResult.value = p.innerHTML;
 
       let foundNumber = checkNumber(p.innerHTML);
       if (foundNumber !== null) {
@@ -439,8 +439,8 @@ function onSpeak(e) {
     }
   } else {
     if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
+      p.innerHTML = e.results[e.results.length - 1][0].transcript;
+      endResult.value = p.innerHTML;
       let foundNumber = checkNumber(p.innerHTML);
       if (foundNumber !== null) {
         p.innerHTML = foundNumber;
@@ -483,6 +483,10 @@ onUnmounted(() => {
     display: none;
     width: fit-content;
     padding: 0px 10px;
+  }
+
+  .hideBtn {
+    visibility: hidden;
   }
 
   .texts {

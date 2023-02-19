@@ -6,6 +6,8 @@
       class="q-mx-md q-my-sm"
     >
       <RecipesCard
+        flat
+        class="bg-secondary"
         :title="recipe.title"
         :servings="recipe.servings"
         :recipe-id="recipe.id"

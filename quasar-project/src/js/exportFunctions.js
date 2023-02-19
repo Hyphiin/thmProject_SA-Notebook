@@ -1,48 +1,72 @@
 export const checkNumber = (stringToCheck) => {
   let tempString = stringToCheck;
-  if (stringToCheck.includes("ein") || stringToCheck.includes("Ein")) {
-    if (stringToCheck.includes("eine") || stringToCheck.includes("Eine")) {
-      tempString = tempString.replace("eine", "");
+  if (stringToCheck.includes(" ein ") || stringToCheck.includes("Ein ")) {
+    if (stringToCheck.includes(" eine ") || stringToCheck.includes("Eine ")) {
+      tempString = tempString.replace("eine", "1");
     } else {
-      tempString = tempString.replace("ein", "");
+      tempString = tempString.replace("ein", "1");
     }
-    return "1 " + tempString;
-  } else if (stringToCheck.includes("zwei") || stringToCheck.includes("Zwei")) {
-    tempString = tempString.replace("zwei", "");
-    return "2 " + tempString;
-  } else if (stringToCheck.includes("drei") || stringToCheck.includes("Drei")) {
-    tempString = tempString.replace("drei", "");
-    return "3 " + tempString;
-  } else if (stringToCheck.includes("vier") || stringToCheck.includes("Vier")) {
-    tempString = tempString.replace("vier", "");
-    return "4 " + tempString;
-  } else if (stringToCheck.includes("fünf") || stringToCheck.includes("Fünf")) {
-    tempString = tempString.replace("fünf", "");
-    return "5 " + tempString;
+    return tempString;
   } else if (
-    stringToCheck.includes("sechs") ||
-    stringToCheck.includes("Sechs")
+    stringToCheck.includes(" zwei ") ||
+    stringToCheck.includes("Zwei ")
   ) {
-    tempString = tempString.replace("sechs", "");
-    return "6 " + tempString;
+    tempString = tempString.replace("zwei", "2");
+    return tempString;
   } else if (
-    stringToCheck.includes("sieben") ||
-    stringToCheck.includes("Sieben")
+    stringToCheck.includes(" drei ") ||
+    stringToCheck.includes("Drei ")
   ) {
-    tempString = tempString.replace("sieben", "");
-    return "7 " + tempString;
-  } else if (stringToCheck.includes("acht") || stringToCheck.includes("Acht")) {
-    tempString = tempString.replace("acht", "");
-    return "8 " + tempString;
-  } else if (stringToCheck.includes("neun") || stringToCheck.includes("Neun")) {
-    tempString = tempString.replace("neun", "");
-    return "9 " + tempString;
-  } else if (stringToCheck.includes("zehn") || stringToCheck.includes("Zehn")) {
-    tempString = tempString.replace("zehn", "");
-    return "10 " + tempString;
-  } else if (stringToCheck.includes("elf") || stringToCheck.includes("Elf")) {
-    tempString = tempString.replace("efl", "");
-    return "11 " + tempString;
+    tempString = tempString.replace("drei", "3");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" vier ") ||
+    stringToCheck.includes("Vier ")
+  ) {
+    tempString = tempString.replace("vier", "4");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" fünf ") ||
+    stringToCheck.includes("Fünf ")
+  ) {
+    tempString = tempString.replace("fünf", "5");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" sechs ") ||
+    stringToCheck.includes("Sechs ")
+  ) {
+    tempString = tempString.replace("sechs", "6");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" sieben ") ||
+    stringToCheck.includes("Sieben ")
+  ) {
+    tempString = tempString.replace("sieben", "7");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" acht ") ||
+    stringToCheck.includes("Acht ")
+  ) {
+    tempString = tempString.replace("acht", "8");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" neun ") ||
+    stringToCheck.includes("Neun ")
+  ) {
+    tempString = tempString.replace("neun", "9");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" zehn ") ||
+    stringToCheck.includes("Zehn ")
+  ) {
+    tempString = tempString.replace("zehn", "10");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" elf ") ||
+    stringToCheck.includes("Elf ")
+  ) {
+    tempString = tempString.replace("efl", "11");
+    return tempString;
   } else {
     return null;
   }
@@ -50,51 +74,50 @@ export const checkNumber = (stringToCheck) => {
 
 export const checkSize = (stringToCheck) => {
   let tempString = stringToCheck;
-  if (stringToCheck.includes("gramm") || stringToCheck.includes("Gramm")) {
-    if (stringToCheck.includes("kilo") || stringToCheck.includes("Kilo")) {
-      if (
-        stringToCheck.includes("kilogramm") ||
-        stringToCheck.includes("Kilogramm")
-      ) {
-        tempString = tempString.replace("kilogramm", "kg");
-      } else {
-        tempString = tempString.replace("kilo", "kg");
-      }
-    } else {
-      tempString = tempString.replace("gramm", "g");
-    }
+  if (stringToCheck.includes(" gramm ") || stringToCheck.includes(" Gramm ")) {
+    tempString = tempString.replace("gramm", "g");
     return tempString;
   } else if (
-    stringToCheck.includes("liter") ||
-    stringToCheck.includes("Liter")
+    stringToCheck.includes(" kilo ") ||
+    stringToCheck.includes(" Kilo ")
   ) {
-    if (
-      stringToCheck.includes("milliliter") ||
-      stringToCheck.includes("Milliliter")
-    ) {
-      tempString = tempString.replace("milliliter", "ml");
-    } else {
-      tempString = tempString.replace("liter", "l");
-    }
+    tempString = tempString.replace("kilo", "kg");
     return tempString;
   } else if (
-    stringToCheck.includes("stück") ||
-    stringToCheck.includes("Stück")
+    stringToCheck.includes(" kilogramm ") ||
+    stringToCheck.includes(" Kilogramm ")
+  ) {
+    tempString = tempString.replace("kilogramm", "kg");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" liter ") ||
+    stringToCheck.includes(" Liter ")
+  ) {
+    tempString = tempString.replace("liter", "l");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" milliliter ") ||
+    stringToCheck.includes(" Milliliter ")
+  ) {
+    tempString = tempString.replace("milliliter", "ml");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" stück ") ||
+    stringToCheck.includes(" Stück ")
   ) {
     tempString = tempString.replace("stück", "Stk");
     return tempString;
   } else if (
-    stringToCheck.includes("packung") ||
-    stringToCheck.includes("Packung")
+    stringToCheck.includes(" packung ") ||
+    stringToCheck.includes(" Packung ")
   ) {
-    if (
-      stringToCheck.includes("packungen") ||
-      stringToCheck.includes("Packungen")
-    ) {
-      tempString = tempString.replace("packungen", "Pkg");
-    } else {
-      tempString = tempString.replace("packung", "Pkg");
-    }
+    tempString = tempString.replace("packung", "Pkg");
+    return tempString;
+  } else if (
+    stringToCheck.includes(" packungen ") ||
+    stringToCheck.includes(" Packungen ")
+  ) {
+    tempString = tempString.replace("packungen", "Pkg");
     return tempString;
   } else {
     return null;

@@ -29,9 +29,9 @@
             dense
             outline
             class="showTextDiv_btn"
+            :class="startedIngredientList || startedSteps ? '' : 'hideBtn'"
             color="primary"
             label="Neu"
-            :disabled="!startedIngredientList && !startedSteps"
             @click="deleteTagText"
           />
           <div id="p-tagDiv" class="p-tagDiv"></div>
@@ -187,7 +187,7 @@
  */
 import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Notify } from "quasar";
-import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
+import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
 import { useRouter } from "vue-router";
 import Artyom from "artyom.js";
 import { checkSize, checkNumber } from "src/js/exportFunctions";
@@ -199,7 +199,7 @@ const router = useRouter();
 /**
  * store
  */
-const storeRecipes_STT1 = useStoreRecipes_STT1();
+const storeRecipes_STT2 = useStoreRecipes_STT2();
 
 /**
  * recipe data
@@ -264,7 +264,7 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipes_STT1.addRecipe({
+    storeRecipes_STT2.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
@@ -353,7 +353,6 @@ var settings = {
           "0px 0px 15px 10px #64e890 ";
       }
     } else {
-      console.log(text);
       if (text && text !== "" && text.length !== 0) {
         p.innerHTML = text;
         endResult.value = text;
@@ -496,6 +495,10 @@ onUnmounted(() => {
     display: none;
     width: fit-content;
     padding: 0px 10px;
+  }
+
+  .hideBtn {
+    visibility: hidden;
   }
 
   .texts {

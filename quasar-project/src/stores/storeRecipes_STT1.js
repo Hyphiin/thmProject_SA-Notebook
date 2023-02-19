@@ -6,7 +6,6 @@ import {
   doc,
   addDoc,
   deleteDoc,
-  updateDoc,
   query,
   orderBy,
 } from "firebase/firestore";
