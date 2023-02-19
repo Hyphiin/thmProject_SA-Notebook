@@ -188,6 +188,7 @@ import { Notify } from "quasar";
 import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 import { useRouter } from "vue-router";
 import RecordRTC from "recordrtc";
+import { checkSize, checkNumber } from "src/js/exportFunctions";
 
 /**
  * router
@@ -253,11 +254,12 @@ const run = async () => {
       keys.sort((a, b) => a - b);
       for (const key of keys) {
         if (texts[key]) {
-          msg += ` ${texts[key]}`;
+          msg = ` ${texts[key]}`;
         }
       }
-      toDoText.innerText = msg;
+      onResult(msg);
     };
+    console.log(texts);
 
     // handle error
     socket.onerror = (event) => {
@@ -312,6 +314,43 @@ const run = async () => {
         .catch((err) => console.error(err));
     };
   }
+};
+
+const onResult = (text) => {
+  results.value = text;
+  if (startedIngredientList.value) {
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+    let foundNumber = checkNumber(p.innerHTML);
+    if (foundNumber !== null) {
+      p.innerHTML = foundNumber;
+    }
+
+    let foundSize = checkSize(p.innerHTML);
+    if (foundSize !== null) {
+      p.innerHTML = foundSize;
+    }
+
+    allIngredients.value.push(p.innerHTML);
+    p = document.createElement("p");
+  } else if (startedSteps.value) {
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+    allSteps.value.push(p.innerHTML);
+    p = document.createElement("p");
+  } else {
+    p.innerHTML = text;
+    endResult.value = text;
+    let foundNumber = checkNumber(p.innerHTML);
+    if (foundNumber !== null) {
+      p.innerHTML = foundNumber;
+    }
+    tagDiv.appendChild(p);
+  }
+
+  console.log("END RESULT:", endResult.value);
 };
 
 /**

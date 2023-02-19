@@ -1,11 +1,11 @@
 <template>
   <q-tabs v-model="tab" align="center" class="text-primary q-mt-sm q-mb-lg">
     <q-tab name="STTAll" label="All Frameworks" />
-    <q-tab name="STT1" label="STT One" />
-    <q-tab name="STT2" label="STT Two" />
-    <q-tab name="STT3" label="STT Three" />
-    <q-tab name="STT4" label="STT Four" />
-    <q-tab name="STT5" label="STT Five" />
+    <q-tab name="STT1" label="Web Speech API" />
+    <q-tab name="STT2" label="Artyom.js" />
+    <q-tab name="STT3" label="Assembly.ai" />
+    <q-tab name="STT4" label="Web Speech API (Windows)" />
+    <q-tab name="STT5" label="Deepspeech" />
   </q-tabs>
   <div align="center" class="q-ma-xl">
     <q-btn
@@ -80,10 +80,10 @@ watch(
     } else if (newValue === "STT4") {
       recipePageLink.value = "/add-recipe-STT4";
       generalStore.changeActiveStore("SpeechToText4");
-    }else if (newValue === "STT5") {
+    } else if (newValue === "STT5") {
       recipePageLink.value = "/add-recipe-STT5";
       generalStore.changeActiveStore("SpeechToText5");
-    }  else if (newValue === "STTAll") {
+    } else if (newValue === "STTAll") {
       recipePageLink.value = "/all-STT";
       generalStore.changeActiveStore("AllStores");
     }

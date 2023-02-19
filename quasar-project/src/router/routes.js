@@ -1,11 +1,10 @@
 import MainLayout from "../layouts/MainLayout.vue";
 import MainPage from "../pages/MainPage.vue";
 import AllSTT from "../pages/AllSTT.vue";
-import NEWRecipe from "../pages/NEW_AddRecipePage_STT1.vue";
+import AddRecipePage_STT1 from "../pages/NEW_AddRecipePage_STT1.vue";
 import AddRecipePage_STT2 from "../pages/NEW_AddRecipePage_STT2.vue";
-// import AddRecipePage_STT3 from "../pages/AddRecipePage_STT3.vue";
-import AddRecipePage_STT4 from "../pages/NEW_AddRecipePage_STT1.vue";
-import AddRecipePage_STT5 from "../pages/NEW_AddRecipePage_STT3.vue";
+import AddRecipePage_STT3 from "../pages/NEW_AddRecipePage_STT3.vue";
+import AddRecipePage_STT4 from "../pages/NEW_AddRecipePage_STT4.vue";
 import ShowRecipePage from "../pages/ShowRecipePage.vue";
 
 const routes = [
@@ -27,7 +26,7 @@ const routes = [
       {
         path: "/add-recipe-STT1",
         name: "NEWRecipe",
-        component: NEWRecipe,
+        component: AddRecipePage_STT1,
       },
       {
         path: "/add-recipe-STT2",
@@ -37,18 +36,18 @@ const routes = [
       {
         path: "/add-recipe-STT3",
         name: "addRecipe_STT3",
-        component: AddRecipePage_STT4,
+        component: AddRecipePage_STT3,
       },
       {
         path: "/add-recipe-STT4",
         name: "addRecipe_STT4",
         component: AddRecipePage_STT4,
       },
-      {
-        path: "/add-recipe-STT5",
-        name: "addRecipe_STT5",
-        component: AddRecipePage_STT5,
-      },
+      // {
+      //   path: "/add-recipe-STT5",
+      //   name: "addRecipe_STT5",
+      //   component: AddRecipePage_STT5,
+      // },
       {
         path: "/show-recipe/:id",
         name: "show_recipe",
