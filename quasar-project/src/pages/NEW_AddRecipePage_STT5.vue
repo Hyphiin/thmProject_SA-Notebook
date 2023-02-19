@@ -86,7 +86,7 @@ import { Notify } from "quasar";
 import { useStoreRecipes_STT5 } from "src/stores/storeRecipes_STT5";
 import { useRouter } from "vue-router";
 import { socket } from "../boot/ezglobals";
-
+import { checkSize, checkNumber } from "src/js/exportFunctions";
 
 const DOWNSAMPLING_WORKER = "../boot/downsampling_worker.js";
 
@@ -223,7 +223,7 @@ onMounted(() => {
   connect.on('recognize', (results) => {
       console.log('recognized:', results);
       recognitionOutput.unshift(results);
-
+      onResult(results.text);
     });
 
   connect.on('disconnect', () => {
@@ -433,6 +433,65 @@ function onEnd() {
   console.log("Speech recognition has stopped. Starting again ...");
   startMicrophone();
 }
+
+const onResult = (text) => {
+    results.value = text;
+    if (startedIngredientList.value) {
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
+
+        let foundSize = checkSize(p.innerHTML);
+        if (foundSize !== null) {
+          p.innerHTML = foundSize;
+        }
+
+        allIngredients.value.push(p.innerHTML);
+        p = document.createElement("p");
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    } else if (startedSteps.value) {
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        allSteps.value.push(p.innerHTML);
+        p = document.createElement("p");
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    } else {
+      console.log(text);
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    }
+
+    console.log("END RESULT:", endResult.value);
+  }
 
 function onSpeak(e) {
   results.value = e.results;
