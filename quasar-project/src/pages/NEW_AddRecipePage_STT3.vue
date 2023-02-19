@@ -1,77 +1,179 @@
 <template>
   <q-btn color="primary" outline class="q-ma-md" to="/">Abbrechen</q-btn>
   <div class="content-div flex column q-pa-md content-center justify-between">
-    <div v-if="recognitionEnded === false" class="texts flex column content-center q-ma-md justify-center">
+    <div
+      v-if="recognitionEnded === false"
+      class="texts flex column content-center q-ma-md justify-center"
+    >
       <p class="to-do-text">Mit der Rezepteingabe starten</p>
       <div v-if="startDic === true" class="btnDiv">
         <div class="recBtn flex justify-center">
-          <q-btn size="32px" round stack color="accent" :icon="recording === false ? 'mic' : 'mic_off'"
-            @click="toggleRecording">
+          <q-btn
+            size="32px"
+            round
+            stack
+            color="accent"
+            :icon="recording === false ? 'mic' : 'mic_off'"
+            @click="toggleRecording"
+          >
             <q-tooltip anchor="center right" self="center start">
               {{
-  recording === false ? "Aufnahme starten" : "Aufnahme stoppen"
+                recording === false ? "Aufnahme starten" : "Aufnahme stoppen"
               }}
             </q-tooltip>
           </q-btn>
         </div>
         <div class="showTextDiv flex no-wrap">
-          <q-btn dense outline class="showTextDiv_btn" color="primary" label="Neu" @click="deleteTagText" />
+          <q-btn
+            dense
+            outline
+            class="showTextDiv_btn"
+            color="primary"
+            label="Neu"
+            @click="deleteTagText"
+          />
           <div id="p-tagDiv" class="p-tagDiv"></div>
-          <q-btn dense class="showTextDiv_btn" color="primary" label="Weiter" @click="nextRecording" />
+          <q-btn
+            dense
+            class="showTextDiv_btn"
+            color="primary"
+            label="Weiter"
+            @click="nextRecording"
+          />
         </div>
       </div>
-      <q-btn color="accent" label="Starten" :class="startDic === false ? 'showStartBtn' : 'hideStartBtn'"
-        @click="startRecipeDictation" />
+      <q-btn
+        color="accent"
+        label="Starten"
+        :class="startDic === false ? 'showStartBtn' : 'hideStartBtn'"
+        @click="startRecipeDictation"
+      />
     </div>
 
-    <q-form v-if="recognitionEnded === true" @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+    <q-form
+      v-if="recognitionEnded === true"
+      @submit="onSubmit"
+      @reset="onReset"
+      class="q-gutter-md"
+    >
       <p>
         Das Rezept wurde erfolgreich erkannt, im unteren Formular kannst du
         alles noch mal prüfen.
       </p>
-      <q-input filled v-model="title" label="Titel des Rezeptes" lazy-rules :rules="[
-        (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
-      ]" />
-      <q-input filled v-model="servings" label="Für wie viele Personen" lazy-rules
-        hint="Für wie viele Personen ist dieses Rezept?" />
+      <q-input
+        filled
+        v-model="title"
+        label="Titel des Rezeptes"
+        lazy-rules
+        :rules="[
+          (val) => (val && val.length > 0) || 'Bitte trage einen Titel ein',
+        ]"
+      />
+      <q-input
+        filled
+        v-model="servings"
+        label="Für wie viele Personen"
+        lazy-rules
+        hint="Für wie viele Personen ist dieses Rezept?"
+      />
 
-      <q-input filled v-model="prepTime" label="Zubereitungszeit" lazy-rules
-        hint="Wie lange dauert es dieses Rezept zu kochen?" />
+      <q-input
+        filled
+        v-model="prepTime"
+        label="Zubereitungszeit"
+        lazy-rules
+        hint="Wie lange dauert es dieses Rezept zu kochen?"
+      />
       <div class="bg-grey-3 q-pa-md">
         <div class="newIngredient flex">
-          <q-input filled v-model="newIngredient" label="Zutat" class="q-mr-sm" :error="displayErrorIngredients"
-            error-message="Bitte ausfüllen" />
-          <q-btn class="q-ml-sm" label="" icon="add" color="primary" style="max-height: 56px" @click="addIngredient" />
+          <q-input
+            filled
+            v-model="newIngredient"
+            label="Zutat"
+            class="q-mr-sm"
+            :error="displayErrorIngredients"
+            error-message="Bitte ausfüllen"
+          />
+          <q-btn
+            class="q-ml-sm"
+            label=""
+            icon="add"
+            color="primary"
+            style="max-height: 56px"
+            @click="addIngredient"
+          />
         </div>
         <div class="addIngredient flex justify-center"></div>
         <p class="text-subtitle1 q-mt-lg">Zutaten:</p>
-        <div v-for="(ingredient, idx) in allIngredients" :key="idx" class="flex flex-col justify-between">
+        <div
+          v-for="(ingredient, idx) in allIngredients"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
           <div>
             <span class="text-bold q-mr-md">{{ ingredient }}</span>
           </div>
 
-          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteIngredient(idx)" />
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteIngredient(idx)"
+          />
         </div>
       </div>
       <div class="bg-grey-3 q-pa-md">
         <div class="newStep flex justify-between">
-          <q-input filled type="textarea" v-model="newStep" :label="'Schritt ' + (allSteps.length + 1)" class="q-mr-sm"
-            :error="displayErrorSteps" error-message="Bitte ausfüllen" style="min-width: 470px" />
-          <q-btn label="" icon="add" color="primary" @click="addStep" style="max-height: 56px" />
+          <q-input
+            filled
+            type="textarea"
+            v-model="newStep"
+            :label="'Schritt ' + (allSteps.length + 1)"
+            class="q-mr-sm"
+            :error="displayErrorSteps"
+            error-message="Bitte ausfüllen"
+            style="min-width: 470px"
+          />
+          <q-btn
+            label=""
+            icon="add"
+            color="primary"
+            @click="addStep"
+            style="max-height: 56px"
+          />
         </div>
         <p class="text-subtitle1 q-mt-lg">Schritte:</p>
-        <div v-for="(step, idx) in allSteps" :key="idx" class="flex flex-col justify-between">
+        <div
+          v-for="(step, idx) in allSteps"
+          :key="idx"
+          class="flex flex-col justify-between"
+        >
           <div>
             <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
             <span> {{ step }}</span>
           </div>
 
-          <q-btn flat round color="primary" icon="delete" size="sm" @click="deleteStep(idx)" />
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="delete"
+            size="sm"
+            @click="deleteStep(idx)"
+          />
         </div>
       </div>
       <div>
         <q-btn label="Speichern" type="submit" color="primary" />
-        <q-btn label="Zurücksetzen" type="reset" color="primary" flat class="q-ml-sm" />
+        <q-btn
+          label="Zurücksetzen"
+          type="reset"
+          color="primary"
+          flat
+          class="q-ml-sm"
+        />
       </div>
     </q-form>
   </div>
@@ -85,6 +187,7 @@ import { ref, onMounted, onUnmounted } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 import { useRouter } from "vue-router";
+import RecordRTC from "recordrtc";
 
 /**
  * router
@@ -99,8 +202,10 @@ const storeRecipes_STT3 = useStoreRecipes_STT3();
 /**
  * recording
  */
-let buttonEl = document.getElementsByClassName('q-icon notranslate material-icons');
-let  titleEl = document.getElementById('real-time-title');
+let buttonEl = document.getElementsByClassName(
+  "q-icon notranslate material-icons"
+);
+let titleEl = document.getElementById("real-time-title");
 
 let isRecording = false;
 let socket;
@@ -108,11 +213,10 @@ let recorder;
 
 const run = async () => {
   isRecording = !isRecording;
-  buttonEl.innerText = isRecording ? 'mic' : 'mic_off';
+  buttonEl.innerText = isRecording ? "mic" : "mic_off";
   //titleEl.innerText = isRecording ? 'Click stop to end recording!' : 'Click start to begin recording!'
 
   if (!isRecording) {
-
     if (recorder) {
       recorder.pauseRecording();
       recorder = null;
@@ -123,25 +227,26 @@ const run = async () => {
       socket.close();
       socket = null;
     }
-
   } else {
     // get session token from backend
-    const response = await fetch('http://localhost:8000');
+    const response = await fetch("http://localhost:8000");
     const data = await response.json();
 
     if (data.error) {
-      alert(data.error)
+      alert(data.error);
     }
 
     const { token } = data;
 
     // establish wss with AssemblyAI at 16000 sample rate
-    socket = new WebSocket(`wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token=${token}`);
+    socket = new WebSocket(
+      `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token=${token}`
+    );
 
     // handle incoming messages to display transcription to the DOM
     const texts = {};
     socket.onmessage = (message) => {
-      let msg = '';
+      let msg = "";
       const res = JSON.parse(message.data);
       texts[res.audio_start] = res.text;
       const keys = Object.keys(texts);
@@ -158,23 +263,26 @@ const run = async () => {
     socket.onerror = (event) => {
       console.error(event);
       socket.close();
-    }
+    };
 
     // handle socket close
-    socket.onclose = event => {
+    socket.onclose = (event) => {
       console.log(event);
       socket = null;
-    }
+    };
+
+    var StereoAudioRecorder = RecordRTC.StereoAudioRecorder;
 
     // handle socket open
     socket.onopen = () => {
       // begin recording
-      toDoText.style.display = '';
-      navigator.mediaDevices.getUserMedia({ audio: true })
+      toDoText.style.display = "";
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
         .then((stream) => {
           recorder = new RecordRTC(stream, {
-            type: 'audio',
-            mimeType: 'audio/webm;codecs=pcm', // endpoint requires 16bit PCM audio
+            type: "audio",
+            mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
             recorderType: StereoAudioRecorder,
             timeSlice: 250, // set 250 ms intervals of data
             desiredSampRate: 16000,
@@ -188,7 +296,11 @@ const run = async () => {
 
                 // audio data must be sent as a base64 encoded string
                 if (socket) {
-                  socket.send(JSON.stringify({ audio_data: base64data.split('base64,')[1] }));
+                  socket.send(
+                    JSON.stringify({
+                      audio_data: base64data.split("base64,")[1],
+                    })
+                  );
                 }
               };
               reader.readAsDataURL(blob);
@@ -299,9 +411,11 @@ const onReset = () => {
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
-  buttonEl = document.getElementsByClassName('q-icon notranslate material-icons')[0];
-  titleEl = document.getElementById('real-time-title');
-  buttonEl.addEventListener('click', run());
+  buttonEl = document.getElementsByClassName(
+    "q-icon notranslate material-icons"
+  )[0];
+  titleEl = document.getElementById("real-time-title");
+  buttonEl.addEventListener("click", run());
 });
 
 let p = document.createElement("p");
@@ -447,8 +561,8 @@ recognition.addEventListener("result", onSpeak);
 onUnmounted(() => {
   console.log("Unmounted");
   recognitionEnded.value = true;
-  recognition.removeEventListener("result", () => { });
-  recognition.removeEventListener("end", () => { });
+  recognition.removeEventListener("result", () => {});
+  recognition.removeEventListener("end", () => {});
   recognition.stop();
 });
 </script>
