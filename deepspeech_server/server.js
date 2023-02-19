@@ -9,10 +9,10 @@ let SILENCE_THRESHOLD = 200; // how many milliseconds of inactivity before proce
 
 const SERVER_PORT = 4000; // websocket server port
 
-// const VAD_MODE = VAD.Mode.NORMAL;
+const VAD_MODE = VAD.Mode.NORMAL;
 // const VAD_MODE = VAD.Mode.LOW_BITRATE;
 // const VAD_MODE = VAD.Mode.AGGRESSIVE;
-const VAD_MODE = VAD.Mode.VERY_AGGRESSIVE;
+//const VAD_MODE = VAD.Mode.VERY_AGGRESSIVE;
 const vad = new VAD(VAD_MODE);
 
 function createModel(modelDir) {
@@ -204,12 +204,14 @@ io.on('connection', function(socket) {
 	socket.on('stream-data', function(data) {
 		processAudioStream(data, (results) => {
 			socket.emit('recognize', results);
+            console.log('Recognized Process Text:', results);
 		});
 	});
 	
 	socket.on('stream-end', function() {
 		endAudioStream((results) => {
 			socket.emit('recognize', results);
+            console.log('Recognized End Text:', results);
 		});
 	});
 	
