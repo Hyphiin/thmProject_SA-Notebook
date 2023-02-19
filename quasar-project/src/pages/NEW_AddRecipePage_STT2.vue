@@ -31,6 +31,7 @@
             class="showTextDiv_btn"
             color="primary"
             label="Neu"
+            :disabled="!startedIngredientList && !startedSteps"
             @click="deleteTagText"
           />
           <div id="p-tagDiv" class="p-tagDiv"></div>
@@ -184,12 +185,12 @@
 /**
  * imports
  */
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, watch } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
 import { useRouter } from "vue-router";
+import Artyom from "artyom.js";
 import { checkSize, checkNumber } from "src/js/exportFunctions";
-
 /**
  * router
  */
@@ -294,6 +295,104 @@ const onReset = () => {
  * SpeechRecognition
  */
 
+const artyom = new Artyom();
+
+// Start the speech recognition
+artyom
+  .initialize({
+    lang: "de-DE",
+  })
+  .then(() => {
+    console.log("Ready to work!");
+  })
+  .catch((err) => {
+    console.error("Cannot initialize Artyom", err);
+  });
+
+// let recognition;
+
+var settings = {
+  lang: "de-DE",
+  continuous: true, // Don't stop never because i have https connection
+  onResult: function (text) {
+    results.value = text;
+    if (startedIngredientList.value) {
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
+
+        let foundSize = checkSize(p.innerHTML);
+        if (foundSize !== null) {
+          p.innerHTML = foundSize;
+        }
+
+        allIngredients.value.push(p.innerHTML);
+        p = document.createElement("p");
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    } else if (startedSteps.value) {
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        allSteps.value.push(p.innerHTML);
+        p = document.createElement("p");
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    } else {
+      console.log(text);
+      if (text && text !== "" && text.length !== 0) {
+        p.innerHTML = text;
+        endResult.value = text;
+        let foundNumber = checkNumber(p.innerHTML);
+        if (foundNumber !== null) {
+          p.innerHTML = foundNumber;
+        }
+        tagDiv.appendChild(p);
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #f96858 ";
+      } else {
+        document.getElementById("recBtn").style.boxShadow =
+          "0px 0px 15px 10px #64e890 ";
+      }
+    }
+
+    console.log("END RESULT:", endResult.value);
+  },
+  onStart: function () {
+    console.log("Dictation started by the user");
+  },
+  onEnd: function () {
+    console.log("Dictation stopped by the user");
+  },
+};
+
+var UserDictation = ref(artyom.newDictation(settings));
+
+const toggleRecording = () => {
+  if (recording.value === true) {
+    recording.value = false;
+    UserDictation.value.stop();
+  } else {
+    recording.value = true;
+    tagDiv = document.querySelector(".p-tagDiv");
+    UserDictation.value.start();
+  }
+};
+
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
@@ -303,12 +402,6 @@ let p = document.createElement("p");
 
 let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
-
-window.SpeechRecognition = window.webkitSpeechRecognition;
-
-let recognition = new window.SpeechRecognition();
-recognition.continuous = true;
-recognition.interimResults = true;
 
 const startDic = ref(false);
 const recording = ref(false);
@@ -320,26 +413,11 @@ const startedSteps = ref(false);
 const recognitionEnded = ref(false);
 
 const startRecipeDictation = () => {
+  artyom.fatality();
   startDic.value = true;
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
   recognitionEnded.value = false;
 };
-
-function toggleRecording() {
-  if (recording.value) {
-    recognition.onend = null;
-    recognition.stop();
-    recording.value = false;
-    document.getElementById("recBtn").style.boxShadow = "none";
-  } else {
-    tagDiv = document.querySelector(".p-tagDiv");
-    recognition.onend = onEnd;
-    recognition.start();
-    recording.value = true;
-    document.getElementById("recBtn").style.boxShadow =
-      "0px 0px 15px 10px #64e890 ";
-  }
-}
 
 const nextRecording = () => {
   results.value = null;
@@ -368,7 +446,7 @@ const nextRecording = () => {
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
-      "Was sind die Arbeitsschritte?  Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
+      "Was sind die Arbeitsschritte? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
     var child = tagDiv.lastElementChild;
     while (child) {
       tagDiv.removeChild(child);
@@ -378,6 +456,7 @@ const nextRecording = () => {
     toDoText.innerText =
       "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
 
+    console.log("hello?");
     startedSteps.value = false;
     startDic.value = false;
     recognitionEnded.value = true;
@@ -388,82 +467,16 @@ const nextRecording = () => {
 };
 
 const deleteTagText = () => {
+  console.log("pushed");
   results.value = null;
   p.innerHTML = "";
+  endResult.value = "";
 };
-
-function onEnd() {
-  console.log("Speech recognition has stopped. Starting again ...");
-  recognition.start();
-}
-
-function onSpeak(e) {
-  results.value = e.results;
-  if (startedIngredientList.value) {
-    if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-
-      let foundNumber = checkNumber(p.innerHTML);
-      if (foundNumber !== null) {
-        p.innerHTML = foundNumber;
-      }
-
-      let foundSize = checkSize(p.innerHTML);
-      if (foundSize !== null) {
-        p.innerHTML = foundSize;
-      }
-      allIngredients.value.push(p.innerHTML);
-
-      tagDiv.appendChild(p);
-      p = document.createElement("p");
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
-    } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
-    }
-  } else if (startedSteps.value) {
-    if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-      tagDiv.appendChild(p);
-
-      allSteps.value.push(p.innerHTML);
-      p = document.createElement("p");
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
-    } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
-    }
-  } else {
-    if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-      let foundNumber = checkNumber(p.innerHTML);
-      if (foundNumber !== null) {
-        p.innerHTML = foundNumber;
-        endResult.value = foundNumber;
-      }
-      tagDiv.appendChild(p);
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
-    } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
-    }
-  }
-}
-
-recognition.addEventListener("result", onSpeak);
 
 onUnmounted(() => {
   console.log("Unmounted");
   recognitionEnded.value = true;
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
-  recognition.stop();
+  artyom.fatality();
 });
 </script>
 
