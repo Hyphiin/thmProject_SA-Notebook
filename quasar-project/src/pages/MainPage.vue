@@ -4,8 +4,8 @@
     <q-tab name="STT1" label="Web Speech API" />
     <q-tab name="STT2" label="Artyom.js" />
     <q-tab name="STT3" label="Assembly.ai" />
-    <q-tab name="STT4" label="Web Speech API (Windows)" />
     <q-tab name="STT5" label="Deepspeech" />
+    <q-tab name="STT4" label="Web Speech API (Windows)" />
   </q-tabs>
   <div align="center" class="q-ma-xl">
     <q-btn

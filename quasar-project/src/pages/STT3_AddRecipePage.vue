@@ -12,7 +12,6 @@
             size="32px"
             round
             stack
-            id="recBtn"
             color="accent"
             :icon="recording === false ? 'mic' : 'mic_off'"
             @click="toggleRecording"
@@ -185,12 +184,13 @@
 /**
  * imports
  */
-import { ref, onMounted, onUnmounted, watch } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { Notify } from "quasar";
-import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
+import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
 import { useRouter } from "vue-router";
-import Artyom from "artyom.js";
+import RecordRTC from "recordrtc";
 import { checkSize, checkNumber } from "src/js/exportFunctions";
+
 /**
  * router
  */
@@ -199,7 +199,7 @@ const router = useRouter();
 /**
  * store
  */
-const storeRecipes_STT2 = useStoreRecipes_STT2();
+const storeRecipes_STT3 = useStoreRecipes_STT3();
 
 /**
  * recipe data
@@ -264,7 +264,7 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipes_STT2.addRecipe({
+    storeRecipes_STT3.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
@@ -284,123 +284,119 @@ const onSubmit = () => {
 };
 
 /**
- * reset all
- */
-const onReset = () => {
-  title.value = null;
-  servings.value = null;
-};
-
-/**
  * SpeechRecognition
  */
 
-const artyom = new Artyom();
+/**
+ * recording
+ */
+let socket;
+let recorder;
 
-// Start the speech recognition
-artyom
-  .initialize({
-    lang: "de-DE",
-  })
-  .then(() => {
-    console.log("Ready to work!");
-  })
-  .catch((err) => {
-    console.error("Cannot initialize Artyom", err);
-  });
+const run = async () => {
+  // isRecording = !isRecording;
+  // buttonEl.innerText = isRecording ? "mic" : "mic_off";
 
-// let recognition;
+  // if (!recording.value) {
+  //   if (recorder) {
+  //     recorder.pauseRecording();
+  //     recorder = null;
+  //   }
 
-var settings = {
-  lang: "de-DE",
-  continuous: true, // Don't stop never because i have https connection
-  onResult: function (text) {
-    results.value = text;
-    if (startedIngredientList.value) {
-      if (text && text !== "" && text.length !== 0) {
-        p.innerHTML = text;
-        endResult.value = text;
-        tagDiv.appendChild(p);
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #f96858 ";
-      } else {
-        let foundNumber = checkNumber(p.innerHTML);
-        if (foundNumber !== null) {
-          p.innerHTML = foundNumber;
-        }
+  //   if (socket) {
+  //     socket.send(JSON.stringify({ terminate_session: true }));
+  //     socket.close();
+  //     socket = null;
+  //   }
+  // } else {
+  // get session token from backend
+  const response = await fetch("http://localhost:8000");
+  const data = await response.json();
 
-        let foundSize = checkSize(p.innerHTML);
-        if (foundSize !== null) {
-          p.innerHTML = foundSize;
-        }
+  if (data.error) {
+    alert(data.error);
+  }
 
-        allIngredients.value.push(p.innerHTML);
-        p = document.createElement("p");
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #64e890 ";
-      }
-    } else if (startedSteps.value) {
-      if (text && text !== "" && text.length !== 0) {
-        p.innerHTML = text;
-        endResult.value = text;
-        tagDiv.appendChild(p);
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #f96858 ";
-      } else {
-        allSteps.value.push(p.innerHTML);
-        p = document.createElement("p");
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #64e890 ";
-      }
-    } else {
-      if (text && text !== "" && text.length !== 0) {
-        p.innerHTML = text;
-        endResult.value = text;
-        let foundNumber = checkNumber(p.innerHTML);
-        if (foundNumber !== null) {
-          p.innerHTML = foundNumber;
-        }
-        tagDiv.appendChild(p);
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #f96858 ";
-      } else {
-        document.getElementById("recBtn").style.boxShadow =
-          "0px 0px 15px 10px #64e890 ";
+  const { token } = data;
+
+  // establish wss with AssemblyAI at 16000 sample rate
+  socket = new WebSocket(
+    `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token=${token}`
+  );
+
+  // handle incoming messages to display transcription to the DOM
+  const texts = {};
+  socket.onmessage = (message) => {
+    let msg = "";
+    const res = JSON.parse(message.data);
+    texts[res.audio_start] = res.text;
+    const keys = Object.keys(texts);
+    keys.sort((a, b) => a - b);
+    for (const key of keys) {
+      if (texts[key]) {
+        msg = ` ${texts[key]}`;
       }
     }
+    onResult(msg);
+  };
+  console.log("texts: ", texts);
 
-    console.log("END RESULT:", endResult.value);
-  },
-  onStart: function () {
-    console.log("Dictation started by the user");
-  },
-  onEnd: function () {
-    console.log("Dictation stopped by the user");
-  },
+  // handle error
+  socket.onerror = (event) => {
+    console.error(event);
+    socket.close();
+  };
+
+  // handle socket close
+  socket.onclose = (event) => {
+    console.log(event);
+    socket = null;
+  };
+
+  var StereoAudioRecorder = RecordRTC.StereoAudioRecorder;
+
+  // handle socket open
+  socket.onopen = () => {
+    // begin recording
+    toDoText.style.display = "";
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then((stream) => {
+        recorder = new RecordRTC(stream, {
+          type: "audio",
+          mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
+          recorderType: StereoAudioRecorder,
+          timeSlice: 250, // set 250 ms intervals of data
+          desiredSampRate: 16000,
+          numberOfAudioChannels: 1, // real-time requires only one channel
+          bufferSize: 4096,
+          audioBitsPerSecond: 128000,
+          ondataavailable: (blob) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const base64data = reader.result;
+
+              // audio data must be sent as a base64 encoded string
+              if (socket) {
+                socket.send(
+                  JSON.stringify({
+                    audio_data: base64data.split("base64,")[1],
+                    language_code: "de-DE",
+                    language: "de",
+                  })
+                );
+              }
+            };
+            reader.readAsDataURL(blob);
+          },
+        });
+
+        recorder.startRecording();
+      })
+      .catch((err) => console.error(err));
+  };
+  // }
 };
-
-var UserDictation = ref(artyom.newDictation(settings));
-
-const toggleRecording = () => {
-  if (recording.value === true) {
-    recording.value = false;
-    UserDictation.value.stop();
-  } else {
-    recording.value = true;
-    tagDiv = document.querySelector(".p-tagDiv");
-    UserDictation.value.start();
-  }
-};
-
-onMounted(() => {
-  tagDiv = document.querySelector(".p-tagDiv");
-  toDoText = document.querySelector(".to-do-text");
-});
-
-let p = document.createElement("p");
-
-let tagDiv = document.querySelector(".p-tagDiv");
-let toDoText = document.querySelector(".to-do-text");
 
 const startDic = ref(false);
 const recording = ref(false);
@@ -412,10 +408,75 @@ const startedSteps = ref(false);
 const recognitionEnded = ref(false);
 
 const startRecipeDictation = () => {
-  artyom.fatality();
   startDic.value = true;
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
   recognitionEnded.value = false;
+};
+
+function toggleRecording() {
+  if (recording.value === true) {
+    recording.value = false;
+    if (recorder) {
+      recorder.pauseRecording();
+      recorder = null;
+    }
+    if (socket) {
+      socket.send(JSON.stringify({ terminate_session: true }));
+      socket.close();
+      socket = null;
+    }
+  } else {
+    tagDiv = document.querySelector(".p-tagDiv");
+    recording.value = true;
+    run();
+  }
+}
+
+onMounted(() => {
+  tagDiv = document.querySelector(".p-tagDiv");
+  toDoText = document.querySelector(".to-do-text");
+});
+
+let p = document.createElement("p");
+
+let tagDiv = document.querySelector(".p-tagDiv");
+let toDoText = document.querySelector(".to-do-text");
+
+const onResult = (text) => {
+  results.value = text;
+  if (startedIngredientList.value) {
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+    let foundNumber = checkNumber(p.innerHTML);
+    if (foundNumber !== null) {
+      p.innerHTML = foundNumber;
+    }
+
+    let foundSize = checkSize(p.innerHTML);
+    if (foundSize !== null) {
+      p.innerHTML = foundSize;
+    }
+
+    allIngredients.value.push(p.innerHTML);
+    p = document.createElement("p");
+  } else if (startedSteps.value) {
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+    allSteps.value.push(p.innerHTML);
+    p = document.createElement("p");
+  } else {
+    p.innerHTML = text;
+    endResult.value = text;
+    let foundNumber = checkNumber(p.innerHTML);
+    if (foundNumber !== null) {
+      p.innerHTML = foundNumber;
+    }
+    tagDiv.appendChild(p);
+  }
+
+  console.log("END RESULT:", endResult.value);
 };
 
 const nextRecording = () => {
@@ -475,7 +536,17 @@ const deleteTagText = () => {
 onUnmounted(() => {
   console.log("Unmounted");
   recognitionEnded.value = true;
-  artyom.fatality();
+
+  if (recorder) {
+    recorder.pauseRecording();
+    recorder = null;
+  }
+
+  if (socket) {
+    socket.send(JSON.stringify({ terminate_session: true }));
+    socket.close();
+    socket = null;
+  }
 });
 </script>
 
@@ -522,10 +593,12 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       width: 80%;
+
       .showTextDiv {
         display: flex;
         align-items: center;
         justify-content: center;
+
         .p-tagDiv {
           margin: 10px;
           padding: 20px;
@@ -540,6 +613,7 @@ onUnmounted(() => {
           text-align: center;
           background-color: var(--q-secondary);
         }
+
         .showTextDiv_btn {
           padding: 5px 10px;
           min-width: 70px;

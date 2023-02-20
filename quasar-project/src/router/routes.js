@@ -1,10 +1,10 @@
 import MainLayout from "../layouts/MainLayout.vue";
 import MainPage from "../pages/MainPage.vue";
 import AllSTT from "../pages/AllSTT.vue";
-import AddRecipePage_STT1 from "../pages/NEW_AddRecipePage_STT1.vue";
-import AddRecipePage_STT2 from "../pages/NEW_AddRecipePage_STT2.vue";
-import AddRecipePage_STT3 from "../pages/NEW_AddRecipePage_STT3.vue";
-import AddRecipePage_STT4 from "../pages/NEW_AddRecipePage_STT4.vue";
+import AddRecipePage_STT1 from "../pages/STT1_AddRecipePage.vue";
+import AddRecipePage_STT2 from "../pages/STT2_AddRecipePage.vue";
+import AddRecipePage_STT3 from "../pages/STT3_AddRecipePage.vue";
+import AddRecipePage_STT4 from "../pages/STT4_AddRecipePage.vue";
 import ShowRecipePage from "../pages/ShowRecipePage.vue";
 
 const routes = [
