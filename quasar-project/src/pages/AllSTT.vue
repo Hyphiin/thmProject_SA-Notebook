@@ -22,22 +22,11 @@
             </q-btn>
           </div>
           <div class="showTextDiv flex no-wrap">
-            <div class="flex column items-center">
-              <q-label>Speech To Text 1</q-label>
-              <div id="p-tagDiv1" class="tagDiv p-tagDiv1"></div>
-            </div>
-            <!-- <div class="flex column items-center">
-              <q-label>Speech To Text 2</q-label>
-              <div id="p-tagDiv2" class="p-tagDiv"></div>
-            </div>
-            <div class="flex column items-center">
-              <q-label>Speech To Text 3</q-label>
-              <div id="p-tagDiv3" class="p-tagDiv"></div>
-            </div> -->
-            <div class="flex column items-center">
-              <q-label>Speech To Text 4</q-label>
-              <div id="p-tagDiv4" class="tagDiv p-tagDiv4"></div>
-            </div>
+            <STT1Rec
+              :toggle-recording="recording"
+              :reset-recording="resetText"
+              @send-text-data="logTheshit"
+            />
           </div>
         </div>
         <div class="flex row q-mt-lg">
@@ -47,7 +36,7 @@
             color="primary"
             outline
             label="Zurücksetzen"
-            @click="resetText"
+            @click="resetText = !resetText"
           />
           <q-btn
             dense
@@ -70,6 +59,7 @@ import { ref, onMounted } from "vue";
 import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 import { useStoreAllRecordings } from "src/stores/storeAllRecordings";
+import { STT1Rec } from "../components/STT1_Rec.vue";
 
 /**
  * router
@@ -88,6 +78,9 @@ const recordingData1 = ref("");
 const recordingData2 = ref("");
 const recordingData3 = ref("");
 const recordingData4 = ref("");
+
+const recording = ref(false);
+const resetText = ref(false);
 
 /**
  * save in store
@@ -120,77 +113,9 @@ const onSubmit = () => {
   }
 };
 
-/**
- * STT1
- */
-onMounted(() => {
-  tagDiv1 = document.querySelector(".p-tagDiv1");
-  tagDiv4 = document.querySelector(".p-tagDiv4");
-});
-
-let p = document.createElement("p");
-
-let tagDiv = document.querySelector(".p-tagDiv");
-
-window.SpeechRecognition = window.webkitSpeechRecognition;
-
-let recognition1 = new window.SpeechRecognition(window.webkitSpeechRecognition);
-const startDic = ref(false);
-const recording = ref(false);
-const result1 = ref(null);
-const result4 = ref(null);
-
-const recognitionEnded = ref(false);
-
-recognition.continuous = true;
-
-function toggleRecording() {
-  if (recording.value) {
-    recognition.onend = null;
-    recognition.stop();
-    recording.value = false;
-  } else {
-    tagDiv = document.querySelector(".p-tagDiv");
-    recognition.onend = onEnd;
-    recognition.start();
-    recording.value = true;
-  }
-}
-
-const nextRecording = () => {
-  result1.value = null;
-  p.innerHTML = "";
-
-  recordingData1.value = "";
-  recordingData4.value = "";
-
-  startDic.value = false;
-  recognitionEnded.value = true;
-  recognition.onend = null;
-  recognition.stop();
-  recording.value = false;
+const logTheshit = (text) => {
+  console.log("log it::::", text);
 };
-
-const resetText = () => {
-  result1.value = null;
-  result4.value = null;
-  p.innerHTML = "";
-  recordingData1.value = "";
-  recordingData4.value = "";
-};
-
-function onEnd() {
-  console.log("Speech recognition has stopped. Starting again ...");
-  recognition.start();
-}
-
-function onSpeak(e) {
-  p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-  recordingData1.value = recordingData1.value + p.innerHTML;
-  tagDiv.appendChild(p);
-}
-
-recognition.addEventListener("result", onSpeak);
 </script>
 
 <style lang="scss">
