@@ -330,14 +330,10 @@ const run = async () => {
     let msg = "";
     const res = JSON.parse(message.data);
     texts[res.audio_start] = res.text;
-    const keys = Object.keys(texts);
-    keys.sort((a, b) => a - b);
-    for (const key of keys) {
-      if (texts[key]) {
-        msg = ` ${texts[key]}`;
-      }
+    if (res.text !== "" && res.text.includes(".")) {
+      msg = res.text.substring(0, res.text.length - 1);
+      onResult(msg);
     }
-    onResult(msg);
   };
   console.log("texts: ", texts);
 
@@ -366,6 +362,7 @@ const run = async () => {
           type: "audio",
           mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
           recorderType: StereoAudioRecorder,
+          language: "de",
           timeSlice: 250, // set 250 ms intervals of data
           desiredSampRate: 16000,
           numberOfAudioChannels: 1, // real-time requires only one channel
@@ -381,8 +378,6 @@ const run = async () => {
                 socket.send(
                   JSON.stringify({
                     audio_data: base64data.split("base64,")[1],
-                    language_code: "de-DE",
-                    language: "de",
                   })
                 );
               }

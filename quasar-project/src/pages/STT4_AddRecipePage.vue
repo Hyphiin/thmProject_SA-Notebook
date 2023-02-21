@@ -12,6 +12,7 @@
             size="32px"
             round
             stack
+            id="recBtn"
             color="accent"
             :icon="recording === false ? 'mic' : 'mic_off'"
             @click="toggleRecording"
@@ -28,6 +29,7 @@
             dense
             outline
             class="showTextDiv_btn"
+            :class="startedIngredientList || startedSteps ? '' : 'hideBtn'"
             color="primary"
             label="Neu"
             @click="deleteTagText"
@@ -185,8 +187,9 @@
  */
 import { ref, onMounted, onUnmounted } from "vue";
 import { Notify } from "quasar";
-import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
+import { useStoreRecipes_STT4 } from "src/stores/storeRecipes_STT4";
 import { useRouter } from "vue-router";
+import { checkSize, checkNumber } from "src/js/exportFunctions";
 
 /**
  * router
@@ -196,7 +199,7 @@ const router = useRouter();
 /**
  * store
  */
-const storeRecipes_STT1 = useStoreRecipes_STT1();
+const storeRecipes_STT4 = useStoreRecipes_STT4();
 
 /**
  * recipe data
@@ -261,7 +264,7 @@ const onSubmit = () => {
       message: "Das Rezept braucht mindestens einen Titel",
     });
   } else {
-    storeRecipes_STT1.addRecipe({
+    storeRecipes_STT4.addRecipe({
       title: title.value,
       servings: servings.value,
       prepTime: prepTime.value,
@@ -302,9 +305,10 @@ let p = document.createElement("p");
 let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
 
-window.SpeechRecognition = window.SpeechRecognition;
+let recognition = new webkitSpeechRecognition();
+recognition.continuous = true;
+recognition.interimResults = true;
 
-let recognition = new window.SpeechRecognition();
 const startDic = ref(false);
 const recording = ref(false);
 const results = ref(null);
@@ -313,8 +317,6 @@ const endResult = ref("");
 const startedIngredientList = ref(false);
 const startedSteps = ref(false);
 const recognitionEnded = ref(false);
-
-recognition.continuous = true;
 
 const startRecipeDictation = () => {
   startDic.value = true;
@@ -327,11 +329,14 @@ function toggleRecording() {
     recognition.onend = null;
     recognition.stop();
     recording.value = false;
+    document.getElementById("recBtn").style.boxShadow = "none";
   } else {
     tagDiv = document.querySelector(".p-tagDiv");
     recognition.onend = onEnd;
     recognition.start();
     recording.value = true;
+    document.getElementById("recBtn").style.boxShadow =
+      "0px 0px 15px 10px #64e890 ";
   }
 }
 
@@ -353,32 +358,22 @@ const nextRecording = () => {
       prepTime.value = endResult.value;
       endResult.value = "";
       toDoText.innerText =
-        "Was sind die Zutaten? Sage diese im folgenden Format: '500 Gramm Tomaten' und trenne Sie jeweils mit einem lauten 'und'.";
+        "Was sind die Zutaten? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit der nächsten weitermachst.";
       startedIngredientList.value = true;
     }
   } else if (startedIngredientList.value === true) {
-    const tempIngridents = endResult.value.split(" und ");
-    tempIngridents.forEach((ingredient) => {
-      allIngredients.value.push(ingredient);
-    });
-
     endResult.value = "";
 
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
-      "Was sind die Arbeitsschritte? Sage bitte vor jedem Schritt: 'Nächster Schritt'.";
+      "Was sind die Arbeitsschritte?  Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
     var child = tagDiv.lastElementChild;
     while (child) {
       tagDiv.removeChild(child);
       child = tagDiv.lastElementChild;
     }
   } else if (startedSteps.value === true) {
-    const tempSteps = endResult.value.split(" nächster Schritt ");
-    tempSteps.forEach((step) => {
-      allSteps.value.push(step);
-    });
-
     toDoText.innerText =
       "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
 
@@ -397,41 +392,65 @@ const deleteTagText = () => {
 };
 
 function onEnd() {
-  console.log("Speech recognition has stopped. Starting again ...");
-  recognition.start();
+  console.log("Speech recognition has stopped.");
 }
 
 function onSpeak(e) {
   results.value = e.results;
   if (startedIngredientList.value) {
-    if (e.results[e.results.length - 1][0].transcript.includes("und")) {
-      p = document.createElement("p");
+    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
+      endResult.value = p.innerHTML;
+
+      let foundNumber = checkNumber(p.innerHTML);
+      if (foundNumber !== null) {
+        p.innerHTML = foundNumber;
+      }
+
+      let foundSize = checkSize(p.innerHTML);
+      if (foundSize !== null) {
+        p.innerHTML = foundSize;
+      }
+      allIngredients.value.push(p.innerHTML);
+
       tagDiv.appendChild(p);
+      p = document.createElement("p");
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
     } else {
-      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-      tagDiv.appendChild(p);
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
     }
   } else if (startedSteps.value) {
-    if (
-      e.results[e.results.length - 1][0].transcript.includes("nächster Schritt")
-    ) {
-      p = document.createElement("p");
+    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
       tagDiv.appendChild(p);
+
+      allSteps.value.push(p.innerHTML);
+      p = document.createElement("p");
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
     } else {
-      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-      endResult.value = endResult.value + p.innerHTML;
-      tagDiv.appendChild(p);
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
     }
   } else {
-    console.log(e.results[e.results.length - 1][0].transcript);
-    p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-    endResult.value = endResult.value + p.innerHTML;
-    tagDiv.appendChild(p);
+    if (e.results[e.results.length - 1].isFinal === true) {
+      p.innerHTML = e.results[e.results.length - 1][0].transcript;
+      endResult.value = p.innerHTML;
+      let foundNumber = checkNumber(p.innerHTML);
+      if (foundNumber !== null) {
+        p.innerHTML = foundNumber;
+        endResult.value = foundNumber;
+      }
+      tagDiv.appendChild(p);
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #64e890 ";
+    } else {
+      document.getElementById("recBtn").style.boxShadow =
+        "0px 0px 15px 10px #f96858 ";
+    }
   }
 }
 
@@ -462,6 +481,10 @@ onUnmounted(() => {
     display: none;
     width: fit-content;
     padding: 0px 10px;
+  }
+
+  .hideBtn {
+    visibility: hidden;
   }
 
   .texts {

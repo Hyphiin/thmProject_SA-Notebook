@@ -132,10 +132,9 @@ let p = document.createElement("p");
 
 let tagDiv = document.querySelector(".p-tagDiv");
 
-// window.SpeechRecognition = window.webkitSpeechRecognition;
+window.SpeechRecognition = window.webkitSpeechRecognition;
 
 let recognition1 = new window.SpeechRecognition(window.webkitSpeechRecognition);
-let recognition2 = new window.SpeechRecognition(window.SpeechRecognition);
 const startDic = ref(false);
 const recording = ref(false);
 const result1 = ref(null);

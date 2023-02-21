@@ -305,9 +305,9 @@ let p = document.createElement("p");
 let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
 
-window.SpeechRecognition = window.webkitSpeechRecognition;
+var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 
-let recognition = new window.SpeechRecognition();
+let recognition = new SpeechRecognition();
 recognition.continuous = true;
 recognition.interimResults = true;
 
