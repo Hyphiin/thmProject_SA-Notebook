@@ -12,7 +12,6 @@
             size="32px"
             round
             stack
-            id="recBtn"
             color="accent"
             :icon="recording === false ? 'mic' : 'mic_off'"
             @click="toggleRecording"
@@ -29,6 +28,7 @@
             dense
             outline
             class="showTextDiv_btn"
+            :class="startedIngredientList || startedSteps ? '' : 'hideBtn'"
             color="primary"
             label="Neu"
             @click="deleteTagText"
@@ -582,11 +582,11 @@ const onResult = (text) => {
         p.innerHTML = foundNumber;
       }
       tagDiv.appendChild(p);
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
+      // document.getElementById("recBtn").style.boxShadow =
+      //   "0px 0px 15px 10px #f96858 ";
     } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
+      // document.getElementById("recBtn").style.boxShadow =
+      //   "0px 0px 15px 10px #64e890 ";
     }
   }
 
@@ -654,6 +654,10 @@ onUnmounted(() => {
     display: none;
     width: fit-content;
     padding: 0px 10px;
+  }
+
+  .hideBtn {
+    visibility: hidden;
   }
 
   .texts {
