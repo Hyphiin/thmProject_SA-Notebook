@@ -40,6 +40,12 @@
               :save-btn-pushed="saveBtnPushed"
               @send-text-data="logTheshit"
             />
+            <STT4Rec
+              :toggle-recording="recording"
+              :reset-recording="resetText"
+              :save-btn-pushed="saveBtnPushed"
+              @send-text-data="logTheshit"
+            />
           </div>
         </div>
         <div class="flex row q-mt-lg">
@@ -75,6 +81,7 @@ import { useStoreAllRecordings } from "src/stores/storeAllRecordings";
 import STT1Rec from "../components/STT1_Rec.vue";
 import STT2Rec from "../components/STT2_Rec.vue";
 import STT3Rec from "../components/STT3_Rec.vue";
+import STT4Rec from "../components/STT4_Rec.vue";
 
 /**
  * router

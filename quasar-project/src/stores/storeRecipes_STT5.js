@@ -18,7 +18,7 @@ const recipesCollectionQuery = query(
   orderBy("date", "desc")
 );
 
-export const useStoreRecipes_STT5 = defineStore("storeRecipes_STT5", () => {
+export const useStoreRecipes_STT4 = defineStore("storeRecipes_STT4", () => {
   const recipes = ref([]);
 
   /**

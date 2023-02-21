@@ -44,9 +44,9 @@ const routes = [
         component: AddRecipePage_STT4,
       },
       {
-        path: "/add-recipe-STT5",
-        name: "addRecipe_STT5",
-        component: AddRecipePage_STT5,
+        path: "/add-recipe-STT4",
+        name: "addRecipe_STT4",
+        component: AddRecipePage_STT4,
       },
       {
         path: "/show-recipe/:id",

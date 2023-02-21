@@ -12,7 +12,6 @@
             size="32px"
             round
             stack
-            id="recBtn"
             color="accent"
             :icon="recording === false ? 'mic' : 'mic_off'"
             @click="toggleRecording"
@@ -185,11 +184,14 @@
 /**
  * imports
  */
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, defineComponent, inject } from "vue";
 import { Notify } from "quasar";
 import { useStoreRecipes_STT4 } from "src/stores/storeRecipes_STT4";
 import { useRouter } from "vue-router";
+import { socket } from "../boot/ezglobals";
 import { checkSize, checkNumber } from "src/js/exportFunctions";
+
+const DOWNSAMPLING_WORKER = "../boot/downsampling_worker.js";
 
 /**
  * router
@@ -291,24 +293,153 @@ const onReset = () => {
   servings.value = null;
 };
 
+const connected = ref(false);
+
 /**
  * SpeechRecognition
  */
+const socket1 = socket;
+let connect;
+let resultsid = 0;
+let recognitionOutput = [];
 
 onMounted(() => {
   tagDiv = document.querySelector(".p-tagDiv");
   toDoText = document.querySelector(".to-do-text");
+
+  //socket1.connect('http://localhost:4000', {});
+  // console.log(socket1.connect('http://localhost:4000', (e) => {
+  //   if(e.connected){
+  //     connected.value = true
+  //   }
+  // }));
+  console.log(socket1);
+  connect = socket1.connect("http://localhost:4000", (e) => {
+    connected.value = true;
+  });
+  console.log(connected.value);
+
+  connect.on("recognize", (results) => {
+    console.log("recognized:", results);
+    recognitionOutput.unshift(results);
+    onResult(results.text);
+  });
+
+  connect.on("disconnect", () => {
+    console.log("socket disconnected");
+    connected.value = false;
+    stopRecording();
+  });
 });
+
+let mediaStream;
+let mediaStreamSource;
+let processor;
+let audioContext;
+
+const startMicrophone = () => {
+  audioContext = new AudioContext();
+
+  const success = (stream) => {
+    console.log("started recording");
+    mediaStream = stream;
+    mediaStreamSource = audioContext.createMediaStreamSource(stream);
+    processor = createAudioProcessor(audioContext, mediaStreamSource);
+    mediaStreamSource.connect(processor);
+  };
+
+  const fail = (e) => {
+    console.error("recording failure", e);
+  };
+
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices
+      .getUserMedia({
+        video: false,
+        audio: true,
+      })
+      .then(success)
+      .catch(fail);
+  } else {
+    navigator.getUserMedia(
+      {
+        video: false,
+        audio: true,
+      },
+      success,
+      fail
+    );
+  }
+};
+
+const stopRecording = () => {
+  if (recording.value) {
+    if (socket1.connected) {
+      socket1.emit("stream-reset");
+    }
+    //clearInterval(recordingInterval);
+    recording.value = false;
+    stopMicrophone();
+  }
+};
+const stopMicrophone = () => {
+  if (mediaStream) {
+    mediaStream.getTracks()[0].stop();
+  }
+  if (mediaStreamSource) {
+    mediaStreamSource.disconnect();
+  }
+  if (processor) {
+    processor.shutdown();
+  }
+  if (audioContext) {
+    audioContext.close();
+  }
+};
+
+const createAudioProcessor = (audioContext, audioSource) => {
+  processor = audioContext.createScriptProcessor(4096, 1, 1);
+
+  const sampleRate = audioSource.context.sampleRate;
+
+  let downsampler = new Worker(
+    new URL("../downsampling_worker.js", import.meta.url)
+  );
+  downsampler.postMessage({ command: "init", inputSampleRate: sampleRate });
+  downsampler.onmessage = (e) => {
+    //if (connected.value) {
+    let string;
+    connect.emit("stream-data", e.data.buffer);
+    //    (e) => {
+    //     console.log(e);
+    //  });
+    //   console.log( connect.emit('stream-data', e.data.buffer));
+    //}
+  };
+
+  processor.onaudioprocess = (event) => {
+    var data = event.inputBuffer.getChannelData(0);
+    downsampler.postMessage({ command: "process", inputFrame: data });
+  };
+
+  processor.shutdown = () => {
+    processor.disconnect();
+    //onaudioprocess = null;
+  };
+
+  processor.connect(audioContext.destination);
+
+  return processor;
+};
 
 let p = document.createElement("p");
 
 let tagDiv = document.querySelector(".p-tagDiv");
 let toDoText = document.querySelector(".to-do-text");
 
-let recognition = new webkitSpeechRecognition();
-recognition.continuous = true;
-recognition.interimResults = true;
+window.SpeechRecognition = window.webkitSpeechRecognition;
 
+//let recognition = new window.SpeechRecognition();
 const startDic = ref(false);
 const recording = ref(false);
 const results = ref(null);
@@ -318,6 +449,8 @@ const startedIngredientList = ref(false);
 const startedSteps = ref(false);
 const recognitionEnded = ref(false);
 
+//recognition.continuous = true;
+
 const startRecipeDictation = () => {
   startDic.value = true;
   toDoText.innerText = "Wie ist der Titel des Rezeptes?";
@@ -326,17 +459,14 @@ const startRecipeDictation = () => {
 
 function toggleRecording() {
   if (recording.value) {
-    recognition.onend = null;
-    recognition.stop();
+    //recognition.onend = null;
+    stopRecording();
     recording.value = false;
-    document.getElementById("recBtn").style.boxShadow = "none";
   } else {
     tagDiv = document.querySelector(".p-tagDiv");
-    recognition.onend = onEnd;
-    recognition.start();
+    //recognition.onend = onEnd;
+    startMicrophone();
     recording.value = true;
-    document.getElementById("recBtn").style.boxShadow =
-      "0px 0px 15px 10px #64e890 ";
   }
 }
 
@@ -358,7 +488,7 @@ const nextRecording = () => {
       prepTime.value = endResult.value;
       endResult.value = "";
       toDoText.innerText =
-        "Was sind die Zutaten? Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit der nächsten weitermachst.";
+        "Was sind die Zutaten? Warte bitte bis der Text angezeigt wird, bevor du mit der nächsten weitermachst.";
       startedIngredientList.value = true;
     }
   } else if (startedIngredientList.value === true) {
@@ -367,7 +497,7 @@ const nextRecording = () => {
     startedIngredientList.value = false;
     startedSteps.value = true;
     toDoText.innerText =
-      "Was sind die Arbeitsschritte?  Warte bitte bis der Aufnahme Button wieder grün ist, bevor du mit dem nächsten weitermachst.";
+      "Was sind die Arbeitsschritte?  Warte bitte bis der Text angezeigt wird, bevor du mit dem nächsten weitermachst.";
     var child = tagDiv.lastElementChild;
     while (child) {
       tagDiv.removeChild(child);
@@ -377,6 +507,7 @@ const nextRecording = () => {
     toDoText.innerText =
       "Vielen Dank! Das Rezept wurde erkannt! Drücke jetzt auf Speichern, um es in deinem Kochbuch aufzunehmen!";
 
+    console.log("hello?");
     startedSteps.value = false;
     startDic.value = false;
     recognitionEnded.value = true;
@@ -392,76 +523,118 @@ const deleteTagText = () => {
 };
 
 function onEnd() {
-  console.log("Speech recognition has stopped.");
+  console.log("Speech recognition has stopped. Starting again ...");
+  startMicrophone();
 }
+
+const onResult = (text) => {
+  results.value = text;
+  if (startedIngredientList.value) {
+    // if (text && text !== "" && text.length !== 0) {
+    //   p.innerHTML = text;
+    //   endResult.value = text;
+    //   tagDiv.appendChild(p);
+    //   document.getElementById("recBtn").style.boxShadow =
+    //     "0px 0px 15px 10px #f96858 ";
+    // } else {
+    let foundNumber = checkNumber(p.innerHTML);
+    if (foundNumber !== null) {
+      p.innerHTML = foundNumber;
+    }
+
+    let foundSize = checkSize(p.innerHTML);
+    if (foundSize !== null) {
+      p.innerHTML = foundSize;
+    }
+
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+
+    allIngredients.value.push(p.innerHTML);
+    p = document.createElement("p");
+    // document.getElementById("recBtn").style.boxShadow =
+    //   "0px 0px 15px 10px #64e890 ";
+    // }
+  } else if (startedSteps.value) {
+    // if (text && text !== "" && text.length !== 0) {
+    //   p.innerHTML = text;
+    //   endResult.value = text;
+    //   tagDiv.appendChild(p);
+    //   document.getElementById("recBtn").style.boxShadow =
+    //     "0px 0px 15px 10px #f96858 ";
+    // } else {
+    p.innerHTML = text;
+    endResult.value = text;
+    tagDiv.appendChild(p);
+    allSteps.value.push(p.innerHTML);
+    p = document.createElement("p");
+    // document.getElementById("recBtn").style.boxShadow =
+    //   "0px 0px 15px 10px #64e890 ";
+    // }
+  } else {
+    console.log(text);
+    if (text && text !== "" && text.length !== 0) {
+      p.innerHTML = text;
+      endResult.value = text;
+      let foundNumber = checkNumber(p.innerHTML);
+      if (foundNumber !== null) {
+        p.innerHTML = foundNumber;
+      }
+      tagDiv.appendChild(p);
+      // document.getElementById("recBtn").style.boxShadow =
+      //   "0px 0px 15px 10px #f96858 ";
+    } else {
+      // document.getElementById("recBtn").style.boxShadow =
+      //   "0px 0px 15px 10px #64e890 ";
+    }
+  }
+
+  console.log("END RESULT:", endResult.value);
+};
 
 function onSpeak(e) {
   results.value = e.results;
   if (startedIngredientList.value) {
-    if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = p.innerHTML;
-
-      let foundNumber = checkNumber(p.innerHTML);
-      if (foundNumber !== null) {
-        p.innerHTML = foundNumber;
-      }
-
-      let foundSize = checkSize(p.innerHTML);
-      if (foundSize !== null) {
-        p.innerHTML = foundSize;
-      }
-      allIngredients.value.push(p.innerHTML);
-
-      tagDiv.appendChild(p);
+    if (e.results[e.results.length - 1][0].transcript.includes("und")) {
       p = document.createElement("p");
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
-    } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
-    }
-  } else if (startedSteps.value) {
-    if (e.results[e.results.length - 1].isFinal === true) {
       p.innerHTML = e.results[e.results.length - 1][0].transcript;
       endResult.value = endResult.value + p.innerHTML;
       tagDiv.appendChild(p);
-
-      allSteps.value.push(p.innerHTML);
-      p = document.createElement("p");
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
     } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
+      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    }
+  } else if (startedSteps.value) {
+    if (
+      e.results[e.results.length - 1][0].transcript.includes("nächster Schritt")
+    ) {
+      p = document.createElement("p");
+      p.innerHTML = e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
+    } else {
+      p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+      endResult.value = endResult.value + p.innerHTML;
+      tagDiv.appendChild(p);
     }
   } else {
-    if (e.results[e.results.length - 1].isFinal === true) {
-      p.innerHTML = e.results[e.results.length - 1][0].transcript;
-      endResult.value = p.innerHTML;
-      let foundNumber = checkNumber(p.innerHTML);
-      if (foundNumber !== null) {
-        p.innerHTML = foundNumber;
-        endResult.value = foundNumber;
-      }
-      tagDiv.appendChild(p);
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #64e890 ";
-    } else {
-      document.getElementById("recBtn").style.boxShadow =
-        "0px 0px 15px 10px #f96858 ";
-    }
+    console.log(e.results[e.results.length - 1][0].transcript);
+    p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
+    endResult.value = endResult.value + p.innerHTML;
+    tagDiv.appendChild(p);
   }
 }
 
-recognition.addEventListener("result", onSpeak);
+// recognition.addEventListener("result", onSpeak);
 
 onUnmounted(() => {
   console.log("Unmounted");
   recognitionEnded.value = true;
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
-  recognition.stop();
+  // recognition.removeEventListener("result", () => {});
+  // recognition.removeEventListener("end", () => {});
+  // recognition.stop();
 });
 </script>
 
@@ -508,10 +681,12 @@ onUnmounted(() => {
       display: flex;
       flex-direction: column;
       width: 80%;
+
       .showTextDiv {
         display: flex;
         align-items: center;
         justify-content: center;
+
         .p-tagDiv {
           margin: 10px;
           padding: 20px;
@@ -526,6 +701,7 @@ onUnmounted(() => {
           text-align: center;
           background-color: var(--q-secondary);
         }
+
         .showTextDiv_btn {
           padding: 5px 10px;
           min-width: 70px;
