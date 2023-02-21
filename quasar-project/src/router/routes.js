@@ -43,11 +43,6 @@ const routes = [
         name: "addRecipe_STT4",
         component: AddRecipePage_STT4,
       },
-      // {
-      //   path: "/add-recipe-STT5",
-      //   name: "addRecipe_STT5",
-      //   component: AddRecipePage_STT5,
-      // },
       {
         path: "/show-recipe/:id",
         name: "show_recipe",

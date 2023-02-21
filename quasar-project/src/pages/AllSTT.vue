@@ -12,7 +12,7 @@
               stack
               color="accent"
               :icon="recording === false ? 'mic' : 'mic_off'"
-              @click="toggleRecording"
+              @click="recording = !recording"
             >
               <q-tooltip anchor="center right" self="center start">
                 {{
@@ -25,6 +25,19 @@
             <STT1Rec
               :toggle-recording="recording"
               :reset-recording="resetText"
+              :save-btn-pushed="saveBtnPushed"
+              @send-text-data="logTheshit"
+            />
+            <STT2Rec
+              :toggle-recording="recording"
+              :reset-recording="resetText"
+              :save-btn-pushed="saveBtnPushed"
+              @send-text-data="logTheshit"
+            />
+            <STT3Rec
+              :toggle-recording="recording"
+              :reset-recording="resetText"
+              :save-btn-pushed="saveBtnPushed"
               @send-text-data="logTheshit"
             />
           </div>
@@ -36,14 +49,14 @@
             color="primary"
             outline
             label="Zurücksetzen"
-            @click="resetText = !resetText"
+            @click="resetTextFunction"
           />
           <q-btn
             dense
             class="showTextDiv_btn"
             color="primary"
             label="Speichern"
-            @click="saveRecording"
+            @click="saveBtnFunction"
           />
         </div>
       </div>
@@ -59,7 +72,9 @@ import { ref, onMounted } from "vue";
 import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 import { useStoreAllRecordings } from "src/stores/storeAllRecordings";
-import { STT1Rec } from "../components/STT1_Rec.vue";
+import STT1Rec from "../components/STT1_Rec.vue";
+import STT2Rec from "../components/STT2_Rec.vue";
+import STT3Rec from "../components/STT3_Rec.vue";
 
 /**
  * router
@@ -80,6 +95,7 @@ const recordingData3 = ref("");
 const recordingData4 = ref("");
 
 const recording = ref(false);
+const saveBtnPushed = ref(false);
 const resetText = ref(false);
 
 /**
@@ -111,6 +127,16 @@ const onSubmit = () => {
     });
     router.back();
   }
+};
+
+const saveBtnFunction = () => {
+  saveBtnPushed.value = !saveBtnPushed.value;
+  recording.value = false;
+};
+
+const resetTextFunction = () => {
+  resetText.value = !resetText.value;
+  recording.value = false;
 };
 
 const logTheshit = (text) => {

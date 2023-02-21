@@ -294,21 +294,6 @@ let socket;
 let recorder;
 
 const run = async () => {
-  // isRecording = !isRecording;
-  // buttonEl.innerText = isRecording ? "mic" : "mic_off";
-
-  // if (!recording.value) {
-  //   if (recorder) {
-  //     recorder.pauseRecording();
-  //     recorder = null;
-  //   }
-
-  //   if (socket) {
-  //     socket.send(JSON.stringify({ terminate_session: true }));
-  //     socket.close();
-  //     socket = null;
-  //   }
-  // } else {
   // get session token from backend
   const response = await fetch("http://localhost:8000");
   const data = await response.json();

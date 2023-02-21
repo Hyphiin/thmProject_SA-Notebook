@@ -2,8 +2,8 @@
   <div class="container">
     <div class="showTextDiv flex no-wrap">
       <div class="flex column items-center">
-        <q-label>Speech To Text 1</q-label>
-        <div id="p-tagDiv" class="tagDiv p-tagDiv"></div>
+        <q-label>Speech To Text 2</q-label>
+        <div id="p-tagDiv2" class="tagDiv2 p-tagDiv2"></div>
       </div>
     </div>
   </div>
@@ -14,6 +14,7 @@
  * imports
  */
 import { ref, onMounted, watch, onUnmounted } from "vue";
+import Artyom from "artyom.js";
 
 /**
  * props
@@ -47,7 +48,7 @@ watch(
   () => props.saveBtnPushed,
   (newValue) => {
     if (newValue === true) {
-      emit("sendTextData", { data: recordingData.value, stt: 1 });
+      emit("sendTextData", { data: recordingData.value, stt: 2 });
     }
   },
   { deep: true, immediate: true }
@@ -74,62 +75,75 @@ const emit = defineEmits(["sendTextData"]);
 const recordingData = ref("");
 
 /**
- * STT1
+ * STT2
  */
+
 onMounted(() => {
-  tagDiv = document.querySelector(".p-tagDiv");
+  tagDiv = document.querySelector(".p-tagDiv2");
 });
 
 let p = document.createElement("p");
-let tagDiv = document.querySelector(".p-tagDiv");
+let tagDiv = document.querySelector(".p-tagDiv2");
 
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
-let recognition = new SpeechRecognition();
+const artyom = new Artyom();
+
+// Start the speech recognition
+artyom
+  .initialize({
+    lang: "de-DE",
+  })
+  .then(() => {
+    console.log("Ready to work!");
+  })
+  .catch((err) => {
+    console.error("Cannot initialize Artyom", err);
+  });
+
+var settings = {
+  lang: "de-DE",
+  continuous: true, // Don't stop never because i have https connection
+  onResult: function (text) {
+    console.log(text);
+    if (text && text !== "" && text.length !== 0) {
+      p.innerHTML = recordingData.value + text;
+      tagDiv.appendChild(p);
+    } else {
+      recordingData.value = p.innerHTML;
+    }
+  },
+  onStart: function () {
+    console.log("Dictation started by the user");
+  },
+  onEnd: function () {
+    console.log("Dictation stopped by the user");
+  },
+};
+
+var UserDictation = ref(artyom.newDictation(settings));
+
 const recording = ref(false);
 
-recognition.continuous = true;
-
-function onEnd() {
-  console.log("Speech recognition has stopped.");
-}
-
-function onSpeak(e) {
-  p.innerHTML = p.innerHTML + e.results[e.results.length - 1][0].transcript;
-  recordingData.value = recordingData.value + p.innerHTML;
-  tagDiv.appendChild(p);
-}
-
-recognition.addEventListener("result", onSpeak);
-
-function toggleRecording() {
-  console.log("recording.value");
+const toggleRecording = () => {
   if (recording.value === true) {
-    recognition.onend = null;
-    recognition.stop();
     recording.value = false;
+    UserDictation.value.stop();
   } else {
-    tagDiv = document.querySelector(".p-tagDiv");
-    recognition.onend = onEnd;
-    recognition.start();
     recording.value = true;
+    tagDiv = document.querySelector(".p-tagDiv2");
+    UserDictation.value.start();
   }
-}
+};
 
 const resetText = () => {
   p.innerHTML = "";
-
   recordingData.value = "";
 
-  recognition.onend = null;
-  recognition.stop();
   recording.value = false;
 };
 
 onUnmounted(() => {
-  console.log("Unmounted STT 1");
-  recognition.removeEventListener("result", () => {});
-  recognition.removeEventListener("end", () => {});
-  recognition.stop();
+  console.log("Unmounted STT2");
+  artyom.fatality();
 });
 </script>
 
@@ -148,7 +162,7 @@ onUnmounted(() => {
         display: flex;
         align-items: center;
         justify-content: center;
-        .tagDiv {
+        .tagDiv2 {
           margin: 10px;
           padding: 20px;
           box-shadow: 2px 2px 10px rgb(197, 197, 197);
