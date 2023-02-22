@@ -15,17 +15,9 @@
       stack
       color="accent"
     />
-    <q-btn
-      v-else
-      :to="recipePageLink"
-      icon="add"
-      label="NEW RECORDING"
-      stack
-      color="accent"
-    />
   </div>
   <div class="q-mx-xl">
-    <STTAllTab v-if="tab === 'STTAll'" />
+    <AllSTT v-if="tab === 'STTAll'" />
     <STT1Tab v-if="tab === 'STT1'" />
     <STT2Tab v-if="tab === 'STT2'" />
     <STT3Tab v-if="tab === 'STT3'" />
@@ -38,7 +30,7 @@
  * imports
  */
 import { ref, watch } from "vue";
-import STTAllTab from "../pages/STTAll_Tab";
+import AllSTT from "../pages/AllSTT";
 import STT1Tab from "../pages/STT1_Tab";
 import STT2Tab from "../pages/STT2_Tab";
 import STT3Tab from "../pages/STT3_Tab";

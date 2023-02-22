@@ -1,6 +1,5 @@
 <template>
   <div class="container-all">
-    <q-btn color="primary" outline class="q-ma-md" to="/">Abbrechen</q-btn>
     <div class="flex justify-center q-pa-md container-all_content">
       <div class="texts flex column content-center q-ma-md items-center">
         <p class="to-do-text">Mit der Aufnahme starten</p>
@@ -56,13 +55,6 @@
             outline
             label="Zurücksetzen"
             @click="resetTextFunction"
-          />
-          <q-btn
-            dense
-            class="showTextDiv_btn"
-            color="primary"
-            label="Speichern"
-            @click="saveBtnFunction"
           />
         </div>
       </div>
