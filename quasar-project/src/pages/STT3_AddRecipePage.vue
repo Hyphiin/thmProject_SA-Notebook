@@ -511,6 +511,17 @@ const deleteTagText = () => {
   results.value = null;
   p.innerHTML = "";
   endResult.value = "";
+  if (startedIngredientList.value) {
+    allIngredients.value = [];
+  }
+  if (startedSteps.value) {
+    startedSteps.value = [];
+  }
+  var child = tagDiv.lastElementChild;
+  while (child) {
+    tagDiv.removeChild(child);
+    child = tagDiv.lastElementChild;
+  }
 };
 
 onUnmounted(() => {
