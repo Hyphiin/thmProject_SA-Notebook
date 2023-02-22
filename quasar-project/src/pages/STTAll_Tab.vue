@@ -8,8 +8,7 @@
       <RecordingsCard
         flat
         class="bg-secondary"
-        :title="recording.title"
-        :recipe-id="recording.id"
+        :recording="recording"
         @delete-clicked="deleteRecording"
       />
     </div>
@@ -20,6 +19,7 @@
 /**
  * imports
  */
+import { onMounted } from "vue";
 import RecordingsCard from "../components/RecordingsCard.vue";
 
 import { useStoreAllRecordings } from "src/stores/storeAllRecordings.js";
@@ -28,6 +28,10 @@ import { useStoreAllRecordings } from "src/stores/storeAllRecordings.js";
  * store
  */
 const storeRecordings = useStoreAllRecordings();
+
+onMounted(() => {
+  storeRecordings.getRecordings();
+});
 
 /**
  * delete recording

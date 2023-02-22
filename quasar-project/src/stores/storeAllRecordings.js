@@ -13,28 +13,28 @@ import {
 import { db } from "/src/js/firebase";
 
 const recordingsCollectionRef = collection(db, "SpeechToTextAll");
-const recordingsCollectionQuery = query(
-  recordingsCollectionRef,
-  orderBy("date", "desc")
-);
 
 export const useStoreAllRecordings = defineStore("storeAllRecordings", () => {
   const recordings = ref([]);
+  const recordingCounter = ref(1);
 
   /**
    * actions
    */
   const getRecordings = async () => {
-    onSnapshot(recordingsCollectionQuery, (querySnapshot) => {
+    onSnapshot(recordingsCollectionRef, (querySnapshot) => {
       const tempRecordings = [];
       querySnapshot.forEach((doc) => {
         let recording = {
           id: doc.id,
+          title: doc.data().title,
           recording1: doc.data().recording1,
           recording2: doc.data().recording2,
           recording3: doc.data().recording3,
+          recording4: doc.data().recording4,
         };
         tempRecordings.push(recording);
+        recordingCounter.value++;
       });
       recordings.value = tempRecordings;
     });
@@ -42,8 +42,13 @@ export const useStoreAllRecordings = defineStore("storeAllRecordings", () => {
 
   const addRecordings = async (newRecordingContent) => {
     await addDoc(recordingsCollectionRef, {
-      recording: newRecordingContent,
+      title: recordingCounter.value,
+      recording1: newRecordingContent[0],
+      recording2: newRecordingContent[1],
+      recording3: newRecordingContent[2],
+      recording4: newRecordingContent[3],
     });
+    recordingCounter.value++;
   };
 
   const deleteRecording = async (idToDelete) => {

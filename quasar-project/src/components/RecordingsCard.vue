@@ -1,13 +1,13 @@
 <template>
   <q-card class="my-card-rec">
     <q-card-section class="bg-primary text-white">
-      <div class="text-h6">{{ title }}</div>
+      <div class="text-h6">{{ recording.title }}</div>
     </q-card-section>
 
     <q-separator dark />
 
     <q-card-actions class="justify-end">
-      <q-btn :to="`/show-recipe/${recordingId}`" outline color="primary"
+      <q-btn :to="`/show-recording/${recording.id}`" outline color="primary"
         >OPEN</q-btn
       >
       <q-btn outline color="red" @click="emit('deleteClicked', recordingId)"
@@ -22,12 +22,8 @@
  * props
  */
 const props = defineProps({
-  title: {
-    type: String,
-    required: true,
-  },
-  recordingId: {
-    type: Number,
+  recording: {
+    type: Object,
     required: true,
   },
 });
@@ -43,8 +39,8 @@ const emit = defineEmits(["deleteClicked"]);
   min-width: 250px;
   width: 250px;
   max-width: 250px;
-  min-height: 280px;
-  height: 280px;
-  max-height: 280px;
+  min-height: 130px;
+  height: 130px;
+  max-height: 130px;
 }
 </style>

@@ -6,6 +6,7 @@ import AddRecipePage_STT2 from "../pages/STT2_AddRecipePage.vue";
 import AddRecipePage_STT3 from "../pages/STT3_AddRecipePage.vue";
 import AddRecipePage_STT4 from "../pages/STT4_AddRecipePage.vue";
 import ShowRecipePage from "../pages/ShowRecipePage.vue";
+import ShowRecordingPage from "../pages/showAllSTT.vue";
 
 const routes = [
   {
@@ -52,6 +53,11 @@ const routes = [
         path: "/show-recipe/:id",
         name: "show_recipe",
         component: ShowRecipePage,
+      },
+      {
+        path: "/show-recording/:id",
+        name: "show_recording",
+        component: ShowRecordingPage,
       },
     ],
   },

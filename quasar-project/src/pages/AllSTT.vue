@@ -26,25 +26,25 @@
               :toggle-recording="recording"
               :reset-recording="resetText"
               :save-btn-pushed="saveBtnPushed"
-              @send-text-data="logTheshit"
+              @send-text-data="saveRecording"
             />
             <STT2Rec
               :toggle-recording="recording"
               :reset-recording="resetText"
               :save-btn-pushed="saveBtnPushed"
-              @send-text-data="logTheshit"
+              @send-text-data="saveRecording"
             />
             <STT3Rec
               :toggle-recording="recording"
               :reset-recording="resetText"
               :save-btn-pushed="saveBtnPushed"
-              @send-text-data="logTheshit"
+              @send-text-data="saveRecording"
             />
             <STT4Rec
               :toggle-recording="recording"
               :reset-recording="resetText"
               :save-btn-pushed="saveBtnPushed"
-              @send-text-data="logTheshit"
+              @send-text-data="saveRecording"
             />
           </div>
         </div>
@@ -74,7 +74,7 @@
 /**
  * imports
  */
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { Notify } from "quasar";
 import { useRouter } from "vue-router";
 import { useStoreAllRecordings } from "src/stores/storeAllRecordings";
@@ -96,10 +96,21 @@ const storeRecordings = useStoreAllRecordings();
 /**
  * recipe data
  */
-const recordingData1 = ref("");
-const recordingData2 = ref("");
-const recordingData3 = ref("");
-const recordingData4 = ref("");
+const recordingData1 = ref({ data: "", stt: -1 });
+const recordingData2 = ref({ data: "", stt: -1 });
+const recordingData3 = ref({ data: "", stt: -1 });
+const recordingData4 = ref({ data: "", stt: -1 });
+
+const recsFull = ref(false);
+
+watch(
+  () => recsFull.value,
+  (newValue) => {
+    if (newValue === true) {
+      onSubmit();
+    }
+  }
+);
 
 const recording = ref(false);
 const saveBtnPushed = ref(false);
@@ -109,31 +120,21 @@ const resetText = ref(false);
  * save in store
  */
 const onSubmit = () => {
-  if (title.value === null) {
-    Notify.create({
-      color: "red-5",
-      textColor: "white",
-      icon: "warning",
-      position: "top",
-      message: "Das Rezept braucht mindestens einen Titel",
-    });
-  } else {
-    storeRecordings.addRecordings({
-      recordingData1,
-      recordingData2,
-      recordingData3,
-      recordingData4,
-    });
+  storeRecordings.addRecordings([
+    recordingData1.value.data,
+    recordingData2.value.data,
+    recordingData3.value.data,
+    recordingData4.value.data,
+  ]);
 
-    Notify.create({
-      color: "green-4",
-      textColor: "white",
-      icon: "cloud_done",
-      position: "top",
-      message: `Rezept '${title.value}' wurde gespeichert!`,
-    });
-    router.back();
-  }
+  Notify.create({
+    color: "green-4",
+    textColor: "white",
+    icon: "cloud_done",
+    position: "top",
+    message: `Aufnahme wurde gespeichert!`,
+  });
+  router.back();
 };
 
 const saveBtnFunction = () => {
@@ -146,8 +147,32 @@ const resetTextFunction = () => {
   recording.value = false;
 };
 
-const logTheshit = (text) => {
-  console.log("log it::::", text);
+const saveRecording = (data) => {
+  switch (data.stt) {
+    case 1:
+      recordingData1.value = data;
+
+      break;
+    case 2:
+      recordingData2.value = data;
+      break;
+    case 3:
+      recordingData3.value = data;
+      break;
+    case 4:
+      recordingData4.value = data;
+      break;
+    default:
+      break;
+  }
+  if (
+    recordingData1.value.stt !== -1 &&
+    recordingData2.value.stt !== -1 &&
+    recordingData3.value.stt !== -1 &&
+    recordingData4.value.stt !== -1
+  ) {
+    recsFull.value = true;
+  }
 };
 </script>
 
