@@ -1,12 +1,7 @@
 <template>
-  <q-card class="my-card">
+  <q-card class="my-card-rec">
     <q-card-section class="bg-primary text-white">
       <div class="text-h6">{{ title }}</div>
-    </q-card-section>
-
-    <q-card-section>
-      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quod non error
-      accusantium voluptatibus iusto similique magnam,
     </q-card-section>
 
     <q-separator dark />
@@ -44,7 +39,7 @@ const emit = defineEmits(["deleteClicked"]);
 </script>
 
 <style lang="scss">
-.my-card {
+.my-card-rec {
   min-width: 250px;
   width: 250px;
   max-width: 250px;

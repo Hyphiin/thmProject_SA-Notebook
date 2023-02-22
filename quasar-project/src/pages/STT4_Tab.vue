@@ -8,6 +8,7 @@
       <RecipesCard
         :title="recipe.title"
         :servings="recipe.servings"
+        :time="recipe.prepTime"
         :recipe-id="recipe.id"
         @delete-clicked="deleteRecipe"
       />

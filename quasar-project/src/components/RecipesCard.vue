@@ -1,14 +1,11 @@
 <template>
   <q-card class="my-card">
-    <q-card-section class="bg-primary text-white">
-      <div class="text-h6">{{ title }}</div>
-      <div class="text-subtitle2">{{ servings }}</div>
-    </q-card-section>
-
-    <q-card-section>
-      Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quod non error
-      accusantium voluptatibus iusto similique magnam,
-    </q-card-section>
+    <q-img src="../assets/Pizza.jpg">
+      <div class="absolute-bottom">
+        <div class="text-h6">{{ title }}</div>
+        <div class="text-subtitle2">{{ servings }} || {{ time }}</div>
+      </div>
+    </q-img>
 
     <q-separator dark />
 
@@ -36,6 +33,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  time: {
+    type: String,
+    required: true,
+  },
   recipeId: {
     type: Number,
     required: true,
@@ -53,8 +54,11 @@ const emit = defineEmits(["deleteClicked"]);
   min-width: 250px;
   width: 250px;
   max-width: 250px;
-  min-height: 280px;
-  height: 280px;
-  max-height: 280px;
+  min-height: 220px;
+  height: 220px;
+  max-height: 220px;
+  .q-img {
+    max-height: 160px;
+  }
 }
 </style>

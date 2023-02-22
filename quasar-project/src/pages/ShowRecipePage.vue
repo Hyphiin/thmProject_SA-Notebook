@@ -1,8 +1,9 @@
 <template>
   <q-btn color="primary" outline class="q-ma-md" to="/">Zurück</q-btn>
-  <div class="content-div flex column q-pa-md content-center">
-    <h5 class="title">{{ recipe.title }}</h5>
-    <div class="flex row justify-between">
+  <div class="content">
+    <div class="content-left q-pa-md">
+      <q-img class="" src="../assets/Pizza.jpg" />
+      <h5 class="title">{{ recipe.title }}</h5>
       <div class="flex column">
         <div class="flex items-center q-pb-md">
           <q-chip color="secondary" square icon="people" class="chipClass">{{
@@ -15,44 +16,44 @@
           }}</q-chip>
         </div>
       </div>
-      <q-chip color="secondary" square
-        >Hinzugefügt am: {{ recipe.date }}</q-chip
-      >
-    </div>
-    <div class="q-my-lg">
-      <q-item-label header class="text-bold">Zutaten</q-item-label>
-      <q-list bordered separator class="rounded-borders text-bold list">
-        <q-item
-          v-for="ingredient in checkIngredientList"
-          clickable
-          v-ripple
-          :key="ingredient.id"
-          @click="ingredient.checked = !ingredient.checked"
-        >
-          <q-item-section side top>
-            <q-checkbox v-model="ingredient.checked" size="sm" />
-          </q-item-section>
-
-          <q-item-section>
-            {{ ingredient.ingredient }}
-          </q-item-section>
-          <q-separator></q-separator>
-        </q-item>
-      </q-list>
     </div>
 
-    <div class="q-my-lg">
-      <q-item-label header class="text-bold">Arbeitsschritte</q-item-label>
-      <q-list bordered separator class="rounded-borders list">
-        <q-item v-for="step in checkStepList" :key="step.id">
-          <q-item-section side top> {{ step.id }}. </q-item-section>
+    <div class="content-right flex column q-pa-md">
+      <div class="q-mb-lg">
+        <q-item-label header class="text-bold">Zutaten</q-item-label>
+        <q-list bordered separator class="rounded-borders text-bold list">
+          <q-item
+            v-for="ingredient in checkIngredientList"
+            clickable
+            v-ripple
+            :key="ingredient.id"
+            @click="ingredient.checked = !ingredient.checked"
+          >
+            <q-item-section side top>
+              <q-checkbox v-model="ingredient.checked" size="sm" />
+            </q-item-section>
 
-          <q-item-section>
-            {{ step.step }}
-          </q-item-section>
-          <q-separator></q-separator>
-        </q-item>
-      </q-list>
+            <q-item-section>
+              {{ ingredient.ingredient }}
+            </q-item-section>
+            <q-separator></q-separator>
+          </q-item>
+        </q-list>
+      </div>
+
+      <div>
+        <q-item-label header class="text-bold">Arbeitsschritte</q-item-label>
+        <q-list bordered separator class="rounded-borders list">
+          <q-item v-for="step in checkStepList" :key="step.id">
+            <q-item-section side top> {{ step.id }}. </q-item-section>
+
+            <q-item-section>
+              {{ step.step }}
+            </q-item-section>
+            <q-separator></q-separator>
+          </q-item>
+        </q-list>
+      </div>
     </div>
   </div>
 </template>
@@ -123,26 +124,48 @@ recipe.prepSteps.forEach((step) => {
 </script>
 
 <style lang="scss">
-.content-div {
-  min-height: 70vh;
-
-  .chipClass {
-    .q-icon {
-      color: var(--q-primary);
+.content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin: 0px 50px;
+  .content-left {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    .q-img {
+      max-height: 300px;
     }
   }
-  .list {
-    background-color: #faf4f1;
-    .q-item {
-      &:hover {
-        background-color: #ffd7ba;
+  .content-right {
+    flex: 1;
+    min-height: 70vh;
+    margin-left: 50px;
+
+    .q-item__label {
+      padding-left: 0px;
+      padding-bottom: 24px;
+      padding-top: 0px;
+    }
+
+    .chipClass {
+      .q-icon {
+        color: var(--q-primary);
       }
     }
-  }
+    .list {
+      background-color: #faf4f1;
+      .q-item {
+        &:hover {
+          background-color: #ffd7ba;
+        }
+      }
+    }
 
-  @media screen and (min-width: 750px) {
-    .title {
-      width: 750px;
+    @media screen and (min-width: 750px) {
+      .title {
+        width: 750px;
+      }
     }
   }
 }
