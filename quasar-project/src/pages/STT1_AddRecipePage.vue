@@ -56,7 +56,7 @@
       v-if="recognitionEnded === true"
       @submit="onSubmit"
       @reset="onReset"
-      class="q-gutter-md"
+      class="q-gutter-md formular"
     >
       <p>
         Das Rezept wurde erfolgreich erkannt, im unteren Formular kannst du
@@ -112,18 +112,24 @@
           :key="idx"
           class="flex flex-col justify-between"
         >
-          <div>
-            <span class="text-bold q-mr-md">{{ ingredient }}</span>
+          <div class="flex input-div">
+            <q-input
+              :model-value="ingredient"
+              filled
+              label=""
+              lazy-rules
+              hint=""
+              @update:model-value="($event) => changeIngredient($event, idx)"
+            />
+            <q-btn
+              flat
+              round
+              color="primary"
+              icon="delete"
+              size="sm"
+              @click="deleteIngredient(idx)"
+            />
           </div>
-
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteIngredient(idx)"
-          />
         </div>
       </div>
       <div class="bg-grey-3 q-pa-md">
@@ -152,19 +158,25 @@
           :key="idx"
           class="flex flex-col justify-between"
         >
-          <div>
+          <div class="flex input-div">
             <span class="text-bold q-mr-md">{{ idx + 1 }}.</span>
-            <span> {{ step }}</span>
+            <q-input
+              :model-value="step"
+              filled
+              label=""
+              lazy-rules
+              hint=""
+              @update:model-value="($event) => changeStep($event, idx)"
+            />
+            <q-btn
+              flat
+              round
+              color="primary"
+              icon="delete"
+              size="sm"
+              @click="deleteStep(idx)"
+            />
           </div>
-
-          <q-btn
-            flat
-            round
-            color="primary"
-            icon="delete"
-            size="sm"
-            @click="deleteStep(idx)"
-          />
         </div>
       </div>
       <div>
@@ -225,6 +237,11 @@ const addIngredient = () => {
 const deleteIngredient = (idx) => {
   allIngredients.value.splice(idx, 1);
 };
+
+const changeIngredient = (newValue, idx) => {
+  allIngredients.value[idx] = newValue;
+  console.log(allIngredients.value);
+};
 /**
  * steps data
  */
@@ -242,6 +259,11 @@ const addStep = () => {
 };
 const deleteStep = (idx) => {
   allSteps.value.splice(idx, 1);
+};
+
+const changeStep = (newValue, idx) => {
+  allSteps.value[idx] = newValue;
+  console.log(allSteps.value);
 };
 
 /**
@@ -546,6 +568,12 @@ onUnmounted(() => {
           margin: 20px;
         }
       }
+    }
+  }
+  .input-div {
+    width: 100%;
+    .q-input {
+      flex: auto;
     }
   }
 }

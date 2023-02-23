@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useStoreGeneral = defineStore("generalStore", () => {
-  const activeStore = ref("");
+  const activeStore = ref("SpeechToText1");
 
   /**
    * actions

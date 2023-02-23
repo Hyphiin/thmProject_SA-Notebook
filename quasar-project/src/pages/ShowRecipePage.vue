@@ -69,6 +69,7 @@ import { useStoreGeneral } from "src/stores/generalStore";
 import { useStoreRecipes_STT1 } from "src/stores/storeRecipes_STT1";
 import { useStoreRecipes_STT2 } from "src/stores/storeRecipes_STT2";
 import { useStoreRecipes_STT3 } from "src/stores/storeRecipes_STT3";
+import { useStoreRecipes_STT4 } from "src/stores/storeRecipes_STT4";
 
 /**
  * router
@@ -80,21 +81,28 @@ const router = useRouter();
  * store
  */
 const generalStore = useStoreGeneral();
-const recipeStore = useStoreRecipes_STT1();
+const recipeStore1 = useStoreRecipes_STT1();
+const recipeStore2 = useStoreRecipes_STT2();
+const recipeStore3 = useStoreRecipes_STT3();
+const recipeStore4 = useStoreRecipes_STT4();
 
-onMounted(() => {
-  switch (generalStore.activeStore) {
-    case "SpeechToText2":
-      recipeStore = useStoreRecipes_STT2();
-      break;
-    case "SpeechToText3":
-      recipeStore = useStoreRecipes_STT3();
-      break;
-  }
-});
-const recipe = recipeStore.recipes.find(
-  (recipe) => recipe.id === route.params.id
-);
+let recipe;
+
+if (recipeStore1.recipes.find((recipe) => recipe.id === route.params.id)) {
+  recipe = recipeStore1.recipes.find((recipe) => recipe.id === route.params.id);
+} else if (
+  recipeStore2.recipes.find((recipe) => recipe.id === route.params.id)
+) {
+  recipe = recipeStore2.recipes.find((recipe) => recipe.id === route.params.id);
+} else if (
+  recipeStore3.recipes.find((recipe) => recipe.id === route.params.id)
+) {
+  recipe = recipeStore3.recipes.find((recipe) => recipe.id === route.params.id);
+} else if (
+  recipeStore4.recipes.find((recipe) => recipe.id === route.params.id)
+) {
+  recipe = recipeStore4.recipes.find((recipe) => recipe.id === route.params.id);
+}
 
 let tempIngredientCounter = 0;
 
